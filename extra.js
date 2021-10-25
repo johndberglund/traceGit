@@ -418,7 +418,7 @@ context.scale(1/sized,1/sized);
 
 // draw vectors
   context.lineWidth = 2;
-  context.strokeStyle ="blue";
+  context.strokeStyle ="green";
   var oldX = (baseX-xOffset)*sized-boxSize;
   var oldY = (baseY-yOffset)*sized-boxSize;
   context.rect(oldX,oldY,boxSize*2+1,boxSize*2+1);
