@@ -1,9 +1,101 @@
-
+<!DOCTYPE html>
 <html>
 <head>
-<script src="p5.js"></script>
-<script src="tracer7.js"></script>
+<link rel="stylesheet" href="menu.css">
+
+<script>
+function resize() {
+  draw();
+}
+function setup() {
+  var c = document.getElementById("myCanvas");
+  var context = c.getContext("2d");
+  c.width = window.innerWidth-175;
+  c.height = window.innerHeight-100;
+  context.rect(0,0,c.width,c.height);
+  context.fillStyle = "white";
+  context.fill();
+}
+
+function getMode() {
+var getMode = document.querySelector('input[name="mode"]:checked');   
+if(getMode != null) {   
+          alert("Selected radio button values is: " + getMode.value);  
+  }
+}
+
+</script>
+
+<script src="extra.js"></script>
+
 </head>
-<body style="margin: 0; padding: 0;">
+
+<body onload="draw()" onresize="resize()">
+<nav>
+<ul>
+  <li class="dropdown"><a>File</a>
+    <ul>
+      <li><a onclick="draw()">New</a>
+      <li><a><input type="file" name="file" accept="image/*" id="loadImage" 
+              class="inputfile" onchange="loadMyImage()" />
+        <label for="loadImage" >Load image</label> </a>
+      <li><a><input type="file" name="file" id="loadTiling" 
+              class="inputfile" onchange="loadMyTiling()" />
+        <label for="loadTiling">Load tiling</label></a>
+      <li><a onclick="goSvg()">Save SVG</a>
+      <li><a onclick="goSave()">Save tiling</a>
+    </ul>
+  </li>
+  <li><a href="#home">Help</a></li>
+
+
+</ul>
+</nav>
+<br>
+
+<div style="float:left; width:140px">
+<form>
+<div style="float:left">
+<label for="draw">
+<img src="draw.png" alt="Draw" onclick="goDraw()" title="draw points"></img>
+</label>
+<br>
+<input type="radio" id="draw" name="mode" value="draw" checked>
+</div>
+<div style="float:left">
+<label for="erase">
+<img src="erase.png" alt="Erase" onclick="goErase()" title="erase points"></img>
+</label>
+<br>
+<input type="radio" id="erase" name="mode" value="erase">
+</div>
+<div style="float:left">
+<label for="move">
+<img src="move.png" alt="Move" onclick="goMove()" title="move points"></img>
+</label>
+<br>
+<input type="radio" id="move" name="mode" value="move">
+</div>
+<br>
+</form>
+
+<img src="up.png" alt="Up" onclick="goUp()" style="margin-left:40px"  title="Up"></img>
+<br>
+<img src="left.png" alt="Left" onclick="goLeft()" title="Left"></img>
+<img src="right.png" alt="Right" onclick="goRight()" style="margin-left:40px" title="Right"></img>
+<br>
+<img src="down.png" alt="Down" onclick="goDown()" style="margin-left:40px" title="Down"></img>
+<br>
+<img src="grow.png" alt="Grow" onclick="goGrow()" style="margin-left:18px" title="Grow"></img>
+<img src="shrink.png" alt="Shrink" onclick="goShrink()" title="Shrink"></img>
+<br>
+
+
+</div>
+<canvas id="myCanvas" style="border:1px solid black; overflow: auto;"
+ onclick="mouseClicked(event)" onmousemove="mouseMoved(event)" onmousedown="mousePressed(event)" onmouseup="mouseReleased(event)"> </canvas>
+<br>
+
+
 </body>
 </html>
