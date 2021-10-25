@@ -3,34 +3,11 @@
 <head>
 <link rel="stylesheet" href="menu.css">
 
-<script>
-function resize() {
-  draw();
-}
-function setup() {
-  var c = document.getElementById("myCanvas");
-  var context = c.getContext("2d");
-  c.width = window.innerWidth-175;
-  c.height = window.innerHeight-100;
-  context.rect(0,0,c.width,c.height);
-  context.fillStyle = "white";
-  context.fill();
-}
-
-function getMode() {
-var getMode = document.querySelector('input[name="mode"]:checked');   
-if(getMode != null) {   
-          alert("Selected radio button values is: " + getMode.value);  
-  }
-}
-
-</script>
-
-<script src="extra.js"></script>
+<script src="extra9.js"></script>
 
 </head>
 
-<body onload="draw()" onresize="resize()">
+<body onload="init()" onresize="resize()">
 <nav>
 <ul>
   <li class="dropdown"><a>File</a>
@@ -53,7 +30,7 @@ if(getMode != null) {
 </nav>
 <br>
 
-<div style="float:left; width:140px">
+<div style="float:left; width:140px;">
 <form>
 <div style="float:left">
 <label for="draw">
@@ -79,22 +56,23 @@ if(getMode != null) {
 <br>
 </form>
 
-<img src="up.png" alt="Up" onclick="goUp()" style="margin-left:40px"  title="Up"></img>
+<img src="up.png" alt="Up" onclick="goUp()"  title="Up"></img>
+<img src="down.png" alt="Down" onclick="goDown()"  title="Down"></img>
 <br>
 <img src="left.png" alt="Left" onclick="goLeft()" title="Left"></img>
-<img src="right.png" alt="Right" onclick="goRight()" style="margin-left:40px" title="Right"></img>
+<img src="right.png" alt="Right" onclick="goRight()" title="Right"></img>
+
 <br>
-<img src="down.png" alt="Down" onclick="goDown()" style="margin-left:40px" title="Down"></img>
-<br>
-<img src="grow.png" alt="Grow" onclick="goGrow()" style="margin-left:18px" title="Grow"></img>
+<img src="grow.png" alt="Grow" onclick="goGrow()" title="Grow"></img>
 <img src="shrink.png" alt="Shrink" onclick="goShrink()" title="Shrink"></img>
 <br>
-
-
 </div>
-<canvas id="myCanvas" style="border:1px solid black; overflow: auto;"
+
+<div id="canvasDiv" style="max-height: 300px; max-width:256px; overflow: scroll; border:3px solid red">
+<canvas id="myCanvas"  style="border:1px solid black;"
  onclick="mouseClicked(event)" onmousemove="mouseMoved(event)" onmousedown="mousePressed(event)" onmouseup="mouseReleased(event)"> </canvas>
-<br>
+</div>
+
 
 
 </body>

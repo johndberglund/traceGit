@@ -30,6 +30,41 @@ function init() {
   curPoly = [];
   polyList = [];
   mode = 0;
+  var c = document.getElementById("myCanvas");
+  var context = c.getContext("2d");
+  c.height = window.innerHeight-135;
+  c.width = window.innerWidth-195;
+  context.rect(0,0,c.width,c.height);
+  context.fillStyle = "white";
+  context.fill();
+  var d = document.getElementById("canvasDiv");
+  d.style.maxHeight= window.innerHeight-110 + "px";
+  d.style.height = window.innerHeight-110 + "px";
+  d.style.maxWidth= window.innerWidth-170 + "px";
+  draw();
+}
+
+
+function resize() {
+  var d = document.getElementById("canvasDiv");
+  d.style.maxHeight= window.innerHeight-110 + "px";
+  d.style.height = window.innerHeight-110 + "px";
+  d.style.maxWidth= window.innerWidth-170 + "px";
+  if (img) { draw(); }
+  else {
+  var c = document.getElementById("myCanvas");
+  var context = c.getContext("2d");
+  c.height = (window.innerHeight-135)*sized;
+  c.width = (window.innerWidth-195)*sized;
+  draw(); }
+}
+
+
+function getMode() {
+var getMode = document.querySelector('input[name="mode"]:checked');   
+if(getMode != null) {   
+          alert("Selected radio button values is: " + getMode.value);  
+  }
 }
 
 function goLeft() {
@@ -58,11 +93,19 @@ yOffset -= 10;
 
 function goGrow() {
   sized *= 2;
+  var c = document.getElementById("myCanvas");
+  var context = c.getContext("2d");
+  c.height = (window.innerHeight-135)*sized;
+  c.width = (window.innerWidth-195)*sized;
   draw();
 }
 
 function goShrink() {
   sized /= 2;
+  var c = document.getElementById("myCanvas");
+  var context = c.getContext("2d");
+  c.height = (window.innerHeight-135)*sized;
+  c.width = (window.innerWidth-195)*sized;
   draw();
 }
 
@@ -323,7 +366,7 @@ function loadMyTiling() {
 
 
 function loadMyImage() {
-  setup();
+  init();
   var c = document.getElementById("myCanvas");
   var context = c.getContext("2d");
 
@@ -336,7 +379,9 @@ function loadMyImage() {
     img.onload = function() {
       img_width = img.width;
       img_height = img.height;
-      context.drawImage(img, 0, 0, img_width, img_height);
+      context.canvas.width = img.width+100;
+      context.canvas.height = img.height+100;
+      context.drawImage(img, 50, 50);
       draw();
     };
     img.src = reader.result;
@@ -347,11 +392,13 @@ function loadMyImage() {
   }
 }
 
-function draw() {
-  setup();
 
+function draw() {
   var c = document.getElementById("myCanvas");
   var context = c.getContext("2d");
+  context.rect(0,0,c.width,c.height);
+  context.fillStyle = "white";
+  context.fill();
   var cRect = c.getBoundingClientRect();        
   var canvasX = Math.round(event.clientX - cRect.left);  
   var canvasY = Math.round(event.clientY - cRect.top);
@@ -362,13 +409,16 @@ function draw() {
     h=img.height;
     var minX = -xOffset*sized;
     var minY = -yOffset*sized;
-    context.drawImage(img,minX,minY,w*sized,h*sized);
+//    context.drawImage(img,minX,minY,w*sized,h*sized);
+context.scale(sized,sized);
+      context.drawImage(img, 50, 50);
+context.scale(1/sized,1/sized);
   }
 
 
 // draw vectors
   context.lineWidth = 2;
-  context.strokeStyle ="green";
+  context.strokeStyle ="blue";
   var oldX = (baseX-xOffset)*sized-boxSize;
   var oldY = (baseY-yOffset)*sized-boxSize;
   context.rect(oldX,oldY,boxSize*2+1,boxSize*2+1);
