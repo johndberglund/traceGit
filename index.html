@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tracer</title>
+<link rel="stylesheet" href="menu.css">
+
+<script src="trace.js"></script>
+
+</head>
+
+<body onload="init()" onresize="resize()">
+<nav>
+<ul>
+  <li class="dropdown"><a>File</a>
+    <ul>
+      <li><a onclick="init()">New</a>
+      <li><a><input type="file" name="file" accept="image/*" id="loadImage" 
+              class="inputfile" onchange="loadMyImage()" />
+        <label for="loadImage" >Load image</label> </a>
+      <li><a><input type="file" name="file" id="loadTiling" 
+              class="inputfile" onchange="loadMyTiling()" />
+        <label for="loadTiling">Load tiling</label></a>
+      <li><a onclick="goSvg()">Save SVG</a>
+      <li><a onclick="goSave()">Save tiling</a>
+    </ul>
+  </li>
+  <li><a href="#home">Help</a></li>
+
+
+</ul>
+</nav>
+<br>
+
+<div style="float:left; width:140px;">
+<form>
+<div style="float:left">
+<label for="draw">
+<img src="draw.png" alt="Draw" onclick="goDraw()" title="draw points"></img>
+</label>
+<br>
+<input type="radio" id="draw" name="mode" value="draw" checked>
+</div>
+<div style="float:left">
+<label for="erase">
+<img src="erase.png" alt="Erase" onclick="goErase()" title="erase points"></img>
+</label>
+<br>
+<input type="radio" id="erase" name="mode" value="erase">
+</div>
+<div style="float:left">
+<label for="move">
+<img src="move.png" alt="Move" onclick="goMove()" title="move points"></img>
+</label>
+<br>
+<input type="radio" id="move" name="mode" value="move">
+</div>
+<br>
+</form>
+
+<img src="up.png" alt="Up" onclick="goUp()"  title="Up"></img>
+<img src="down.png" alt="Down" onclick="goDown()"  title="Down"></img>
+<br>
+<img src="left.png" alt="Left" onclick="goLeft()" title="Left"></img>
+<img src="right.png" alt="Right" onclick="goRight()" title="Right"></img>
+
+<br>
+<img src="grow.png" alt="Grow" onclick="goGrow()" title="Grow"></img>
+<img src="shrink.png" alt="Shrink" onclick="goShrink()" title="Shrink"></img>
+<br>
+</div>
+
+<div id="canvasDiv" style="max-height: 300px; max-width:256px; overflow: scroll; border:3px solid red">
+<canvas id="myCanvas"  style="border:1px solid black;"
+ onclick="mouseClicked(event)" onmousemove="mouseMoved(event)" onmousedown="mousePressed(event)" onmouseup="mouseReleased(event)"> </canvas>
+</div>
+
+
+
+</body>
+</html>
