@@ -1,5 +1,5 @@
 var img;
-var boxSize = 9;
+var boxSize = 7;
 var sized=1;
 var xOffset=0;
 var yOffset=0;
@@ -68,14 +68,14 @@ if(getMode != null) {
 }
 
 function goLeft() {
-//  if (xOffset < w-10) {xOffset += 10;}
-xOffset += 10;
+//  if (xOffset < w-50) {xOffset += 50;}
+xOffset += 50;
   draw();
 }
 
 function goRight() {
-//  if (xOffset >= 10) {xOffset -= 10;}
-xOffset -= 10;
+//  if (xOffset >= 50) {xOffset -= 50;}
+xOffset -= 50;
   draw();
 }
 
@@ -92,7 +92,7 @@ yOffset -= 10;
 }
 
 function goGrow() {
-  sized *= 2;
+  sized *= 1.2;
   var c = document.getElementById("myCanvas");
   var context = c.getContext("2d");
   c.height = (window.innerHeight-135)*sized;
@@ -101,7 +101,7 @@ function goGrow() {
 }
 
 function goShrink() {
-  sized /= 2;
+  sized /= 1.2;
   var c = document.getElementById("myCanvas");
   var context = c.getContext("2d");
   c.height = (window.innerHeight-135)*sized;
@@ -124,6 +124,39 @@ function goMove() {
   mode = 2;
 // draw();
 }
+
+function mapping(rawPt, mapping) {
+  var X = rawPt[0]+mapping[0]*Ax + mapping[1]*Bx;
+  var Y = rawPt[1]+mapping[0]*Ay + mapping[1]*By;
+  return  [X,Y] ;
+}
+
+function invMap(rawPt, mapping) {
+  var X = rawPt[0]-mapping[0]*Ax - mapping[1]*Bx;
+  var Y = rawPt[1]-mapping[0]*Ay - mapping[1]*By;
+  return  [X,Y] ;
+}
+
+function avePts(ptList) {
+  var xSum=0;
+  var ySum=0;
+  ptList.forEach(function(pt) {
+    xSum+= pt[0];
+    ySum+= pt[1];
+  });
+  xSum /= ptList.length;
+  ySum /= ptList.length;
+  return [xSum, ySum];
+}
+
+
+
+
+
+
+
+
+
 
 function txtToFile(content, filename, contentType) {
   const a = document.createElement('a');
