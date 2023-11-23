@@ -125,6 +125,11 @@ function goMove() {
 // draw();
 }
 
+function goReg() {
+  makeRegular();
+  draw();
+}
+
 function mapping(rawPt, mapping) {
   var X = rawPt[0]+mapping[0]*Ax + mapping[1]*Bx;
   var Y = rawPt[1]+mapping[0]*Ay + mapping[1]*By;
@@ -148,6 +153,151 @@ function avePts(ptList) {
   ySum /= ptList.length;
   return [xSum, ySum];
 }
+
+
+// input polygon and center, average the polar coordinates to find best fit regular polygon, 
+// output vote where to move pointList, (have the polygon given clockwise.)
+function avePolar(polyRawPolar,centPt) {
+  var rNew = 0;
+  var tBase = 0;
+  var vertNum = 0;
+  var numVert = polyRawPolar.length;
+  var startT = polyRawPolar[0][3][1];
+  var lastT = 0;
+  polyRawPolar.forEach(function(ptMapRawPolar) {
+    ptMapRawPolar[3][1] -= startT;
+    if (ptMapRawPolar[3][1] < lastT) {
+      ptMapRawPolar[3][1] += 2*Math.PI;
+    };
+   });
+  polyRawPolar.forEach(function(ptMapRawPolar) {
+    rNew += ptMapRawPolar[3][0];
+    var addBaseT = ptMapRawPolar[3][1] - vertNum*2*Math.PI/numVert;
+    addBaseT %= (2*Math.PI);
+    addBaseT += (2*Math.PI);
+    addBaseT %= (2*Math.PI);
+    if (addBaseT>Math.PI) {addBaseT -= (2*Math.PI)};
+    tBase += addBaseT;
+    vertNum += 1;
+  });
+  tBase /= numVert;
+  tBase += startT;
+  rNew /= numVert;
+  var PtVoteList = [];
+  var maxDist = Number.MAX_VALUE;
+  var bestCount = 0;
+  for (counter = -2;counter<3;counter++) {
+    var sumDist = 0;
+    vertNum = 0;
+    polyRawPolar.forEach(function(ptMapRawPolar) {
+      var tNew = tBase + (vertNum+counter)*2*Math.PI/numVert;
+      var newX = centPt[0] + rNew*Math.cos(tNew);
+      var newY = centPt[1] + rNew*Math.sin(tNew);
+      var thisDist = Math.sqrt((newX-ptMapRawPolar[2][0])**2+(newY-ptMapRawPolar[2][1])**2);
+      sumDist += thisDist;
+      vertNum += 1;
+    });
+    if (sumDist<maxDist) {maxDist = sumDist; bestCount=counter;};
+  } // end counter
+  vertNum = 0;
+  polyRawPolar.forEach(function(ptMapRawPolar) {
+    var tNew = tBase + (vertNum+bestCount)*2*Math.PI/numVert;
+    var newX = centPt[0] + rNew*Math.cos(tNew);
+    var newY = centPt[1] + rNew*Math.sin(tNew);
+    var newPt = invMap([newX,newY], ptMapRawPolar[1]);
+    PtVoteList.push([ptMapRawPolar[0],newPt]);
+    vertNum += 1;
+  });
+  return (PtVoteList);
+} // end avePolar
+
+function rect2Polar(rect) {
+  var x = rect[0];
+  var y = rect[1];
+  var radius = Math.sqrt(x*x+y*y);
+  var theta;
+  if (x === 0) {
+    if (y < 0) { theta = 3*Math.PI/2; }
+      else { theta = Math.PI/2;}
+    } 
+    else { theta = Math.atan(y/x);}
+  if (x < 0) {theta += Math.PI;}
+  if (theta < 0) {theta +=2*Math.PI;}
+  return [radius, theta];
+}
+
+function addPolar(polyRaw, centPt) {
+  var polyRawPolar = [];
+  polyRaw.forEach(function(ptMapRaw) {
+    var vecX = ptMapRaw[2][0]-centPt[0];
+    var vecY = ptMapRaw[2][1]-centPt[1];
+    var vecPolar = rect2Polar([vecX, vecY]);
+    polyRawPolar.push([ptMapRaw[0],ptMapRaw[1],ptMapRaw[2],vecPolar]);
+  });
+  return polyRawPolar;
+}
+
+function polyRaw2Cent(polyRaw) {
+  var rawPtList = [];
+  polyRaw.forEach(function(ptMapRaw) {
+    rawPtList.push(ptMapRaw[2]);
+  });
+  var centPt = avePts(rawPtList);
+  return centPt ;
+}
+
+function polyAddRaw(poly) {
+  var polyRaw = [];
+  poly.forEach(function(ptMap) {
+    var rawPt = mapping(pointList[ptMap[0]],ptMap[1]);
+    polyRaw.push([ptMap[0],ptMap[1],rawPt]);
+  });
+  return polyRaw;
+}
+
+// this will try to make the polygons regular
+// it some times makes funny stuff happen around 2:00 on big polygons
+// this can be fixed at times by a couple of duals
+function makeRegular() {
+  var PtVoteList = [];
+  polyList.forEach(function(poly) {
+    var polyRaw = polyAddRaw(poly);
+    var centPt = polyRaw2Cent(polyRaw);
+    var polyRawPolar = addPolar(polyRaw, centPt);
+    // sort by descending angle so all polygons have same orientation
+ //   polyRawPolar.sort((A,B)=> B[3][1]-A[3][1]);
+    PtVoteList = PtVoteList.concat(avePolar(polyRawPolar,centPt));
+
+  });
+
+  // sort point list by index
+  PtVoteList.sort((A,B) => A[0]-B[0]);
+  var curPt = 0;
+  var votesByPt = [];
+  var avePtVote=[];
+  // average all votes for where to move the point
+  PtVoteList.forEach(function(ptVote) {
+    if (curPt === ptVote[0]) {votesByPt.push(ptVote[1]);}
+    else { 
+      avePtVote.push([curPt,avePts(votesByPt)]);
+      curPt = ptVote[0];
+      votesByPt = [ptVote[1]];
+      };
+  });
+  avePtVote.push([curPt,avePts(votesByPt)]);
+  // don't move any fixed points - currently none.
+//  var fixedPts = [];
+//  for (counter = 0;counter<pointList.length;counter++) {
+//    if (pointList[counter][0]===0) {fixedPts[counter]=[counter,pointList[counter]] }
+//  }; 
+  for (i = 0;i<avePtVote.length;i++) {
+    pointList[avePtVote[i][0]] = avePtVote[i][1];
+  }
+  // fixedPts.forEach(function(fixedPt) {pointList[fixedPt[0]]=fixedPt[1];});
+
+} // end makeRegular
+
+
 
 
 
