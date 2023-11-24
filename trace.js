@@ -111,19 +111,25 @@ function goShrink() {
 
 function goDraw() {
   mode = 0;
-// draw();
 }
 
 function goErase() {
   mode = 1;
   curPoly = [];
- // draw();
+}
+
+function goLock() {
+  mode = 2;
+}
+
+function goExplode() {
+  mode = 3;
 }
 
 function goMove() {
-  mode = 2;
-// draw();
+  mode = 4;
 }
+
 
 function goReg() {
   makeRegular();
@@ -153,7 +159,6 @@ function avePts(ptList) {
   ySum /= ptList.length;
   return [xSum, ySum];
 }
-
 
 // input polygon and center, average the polar coordinates to find best fit regular polygon, 
 // output vote where to move pointList, (have the polygon given clockwise.)
@@ -386,28 +391,26 @@ function mouseMoved(event) {
   posi = [canvasX/sized+xOffset,canvasY/sized+yOffset];
 
 //move points
-  if (posi1 != 0 && mode===2) {
+  if (posi1 != 0 && mode===4) {
     posi = [canvasX/sized+xOffset,canvasY/sized+yOffset];
     pointList[ptMap1[0]]=[oldPoint[0]-posi1[0]+posi[0],
                           oldPoint[1]-posi1[1]+posi[1]];
     draw();
   }
 //move vectors
-  if (posi1 != 0 && mode>2) {
+  if (posi1 != 0 && mode>4) {
     posi = [canvasX/sized+xOffset,canvasY/sized+yOffset];
-    if (mode ===3) {
+    if (mode ===5) {
       baseX = oldPoint[0]-posi1[0]+posi[0];
       baseY = oldPoint[1]-posi1[1]+posi[1];
     }
-    if (mode ===4) {
+    if (mode ===6) {
       Ax = oldPoint[0]-posi1[0]+posi[0]-baseX;
       Ay = oldPoint[1]-posi1[1]+posi[1]-baseY;
-
     }
-    if (mode ===5) {
+    if (mode ===7) {
       Bx = oldPoint[0]-posi1[0]+posi[0]-baseX;
       By = oldPoint[1]-posi1[1]+posi[1]-baseY;
-
     }
     draw();
   }
@@ -428,7 +431,7 @@ function mouseClicked(event) {
 }
 
 function mousePressed(event) {
-  if (posi1 === 0 && mode===2) {
+  if (posi1 === 0 && mode===4) {
     var c = document.getElementById("myCanvas");
     var cRect = c.getBoundingClientRect();        
     var canvasX = Math.round(event.clientX - cRect.left);  
@@ -437,18 +440,18 @@ function mousePressed(event) {
     ptMap1= findPoint(posi1);
     if (ptMap1[0]<0) { 
       mode = onVector();
-      if (mode===2) {posi1=0;}
+      if (mode===4) {posi1=0;}
     }
     else { oldPoint = pointList[ptMap1[0]]; }
   }
 }
 
 function mouseReleased(event) {
-  if (posi1 != 0 && mode===2) {
+  if (posi1 != 0 && mode===4) {
     posi1 = 0;
   }
-  if (posi1 != 0 && mode>2) {
-    mode=2;
+  if (posi1 != 0 && mode>4) {
+    mode=4;
     posi1 = 0;
   }
   draw();
@@ -456,16 +459,16 @@ function mouseReleased(event) {
 
 
 function onVector() {
-  var onVec = 2;
+  var onVec = 4;
   if (Math.abs(posi1[0]-baseX)<=boxSize/sized 
          && Math.abs(posi1[1]-baseY)<=boxSize/sized )
-          {onVec = 3; oldPoint = posi1;};
+          {onVec = 5; oldPoint = posi1;};
   if (Math.abs(posi1[0]-baseX-Ax)<=boxSize/sized 
          && Math.abs(posi1[1]-baseY-Ay)<=boxSize/sized )
-          {onVec = 4;oldPoint = posi1;};
+          {onVec = 6;oldPoint = posi1;};
   if (Math.abs(posi1[0]-baseX-Bx)<=boxSize/sized 
          && Math.abs(posi1[1]-baseY-By)<=boxSize/sized )
-          {onVec = 5;oldPoint = posi1;};
+          {onVec = 7;oldPoint = posi1;};
   return(onVec);
 }
 

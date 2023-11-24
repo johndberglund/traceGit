@@ -31,7 +31,7 @@
 </nav>
 <br>
 
-<div style="float:left; width:140px;">
+<div style="float:left; width:200px;">
 <form>
 <div style="float:left">
 <label for="draw">
@@ -46,6 +46,20 @@
 </label>
 <br>
 <input type="radio" id="erase" name="mode" value="erase">
+</div>
+<div style="float:left">
+<label for="lock">
+<img src="lock.png" alt="Lock" onclick="goLock()" title="lock points"></img>
+</label>
+<br>
+<input type="radio" id="lock" name="mode" value="lock">
+</div>
+<div style="float:left">
+<label for="explode">
+<img src="bomb.png" alt="Explode" onclick="goExplode()" title="explode points"></img>
+</label>
+<br>
+<input type="radio" id="explode" name="mode" value="explode">
 </div>
 <div style="float:left">
 <label for="move">
