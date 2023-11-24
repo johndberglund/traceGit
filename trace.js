@@ -10,6 +10,7 @@ var posi1=0;
 var ptMap1;
 var oldPoint;
 var pointList = [];
+var fixedList = [];
 var curPoly = [];
 var polyList = [];
 var myTiling;
@@ -261,8 +262,6 @@ function polyAddRaw(poly) {
 }
 
 // this will try to make the polygons regular
-// it some times makes funny stuff happen around 2:00 on big polygons
-// this can be fixed at times by a couple of duals
 function makeRegular() {
   var PtVoteList = [];
   polyList.forEach(function(poly) {
@@ -456,7 +455,6 @@ function mouseReleased(event) {
   }
   draw();
 }
-
 
 function onVector() {
   var onVec = 4;
