@@ -8,6 +8,7 @@ var h;
 var posi;
 var posi1=0;
 var ptMap1;
+var ptMap2 = -1;
 var oldPoint;
 var pointList = [];
 var fixedList = [];
@@ -120,11 +121,13 @@ function goErase() {
 }
 
 function goLock() {
-  mode = 2;
+alert("We can't yet lock points");
+//  mode = 2;
 }
 
 function goExplode() {
-  mode = 3;
+alert("We can't yet explode points.");
+//  mode = 3;
 }
 
 function goMove() {
@@ -301,17 +304,6 @@ function makeRegular() {
 
 } // end makeRegular
 
-
-
-
-
-
-
-
-
-
-
-
 function txtToFile(content, filename, contentType) {
   const a = document.createElement('a');
   const file = new Blob([content], {type: "text/plain", endings: "native"});
@@ -370,16 +362,53 @@ function goSvg() {
 
 // find point close to current point, or -1 if none.
 function findPoint(point) {
+  let newPt = newCoords(point,[Ax,Ay],[Bx,By]);
+  let i = Math.round(newPt[0]);
+  let j = Math.round(newPt[1]);
+  newPt[0] = point[0]-i*Ax-j*Bx;
+  newPt[1] = point[1]-i*Ay-j*By;
   for (pt = 0;pt<pointList.length;pt++) {
-    for (i = -1;i<2;i++) {
-      for (j = -1; j<2;j++) {
-        if (Math.abs(point[0]-(pointList[pt][0]+i*Ax+j*Bx))<=boxSize/sized 
-         && Math.abs(point[1]-(pointList[pt][1]+i*Ay+j*By))<=boxSize/sized)
-          {return [pt,[i,j]];}
-      }
+    let newPt2 = newCoords(pointList[pt],[Ax,Ay],[Bx,By]);
+    let i2 = Math.round(newPt2[0]);
+    let j2 = Math.round(newPt2[1]);
+    newPt2[0] = pointList[pt][0]-i2*Ax-j2*Bx;
+    newPt2[1] = pointList[pt][1]-i2*Ay-j2*By;
+    if (Math.abs(newPt[0]-newPt2[0])<=boxSize/sized 
+      && Math.abs(newPt[1]-newPt2[1])<=boxSize/sized)
+    {return [pt,[i-i2,j-j2]];}
+  }
+  return([-1]);
+}
+
+// find point close to current point, or -1 if none. BUT exclude point ptMap1
+function findNewPoint(point) {
+  let newPt = newCoords(point,[Ax,Ay],[Bx,By]);
+  let i = Math.round(newPt[0]);
+  let j = Math.round(newPt[1]);
+  newPt[0] = point[0]-i*Ax-j*Bx;
+  newPt[1] = point[1]-i*Ay-j*By;
+  for (pt = 0;pt<pointList.length;pt++) {
+    if (pt != ptMap1[0]) {
+      let newPt2 = newCoords(pointList[pt],[Ax,Ay],[Bx,By]);
+      let i2 = Math.round(newPt2[0]);
+      let j2 = Math.round(newPt2[1]);
+      newPt2[0] = pointList[pt][0]-i2*Ax-j2*Bx;
+      newPt2[1] = pointList[pt][1]-i2*Ay-j2*By;
+      if (Math.abs(newPt[0]-newPt2[0])<=boxSize/sized 
+        && Math.abs(newPt[1]-newPt2[1])<=boxSize/sized)
+      {return [pt,[i-i2,j-j2]];}
     }
   }
   return([-1]);
+}
+
+
+// return point in (vect1,vect2) coord. system
+function newCoords(point,vect1,vect2) {
+  let denom = vect1[0]*vect2[1]-vect1[1]*vect2[0];
+  let newX = point[0]*vect2[1]-point[1]*vect2[0];
+  let newY = vect1[0]*point[1]-vect1[1]*point[0];
+  return([newX/denom,newY/denom]);
 }
 
 function mouseMoved(event) {
@@ -391,14 +420,15 @@ function mouseMoved(event) {
 
 //move points
   if (posi1 != 0 && mode===4) {
-    posi = [canvasX/sized+xOffset,canvasY/sized+yOffset];
+//    posi = [canvasX/sized+xOffset,canvasY/sized+yOffset];
+    ptMap2 = findNewPoint(posi);
     pointList[ptMap1[0]]=[oldPoint[0]-posi1[0]+posi[0],
                           oldPoint[1]-posi1[1]+posi[1]];
     draw();
   }
 //move vectors
   if (posi1 != 0 && mode>4) {
-    posi = [canvasX/sized+xOffset,canvasY/sized+yOffset];
+//    posi = [canvasX/sized+xOffset,canvasY/sized+yOffset];
     if (mode ===5) {
       baseX = oldPoint[0]-posi1[0]+posi[0];
       baseY = oldPoint[1]-posi1[1]+posi[1];
@@ -636,6 +666,22 @@ context.scale(1/sized,1/sized);
       }
     }
   });
+
+
+//I want this to outline if we move a point to overlap another.
+//this doesn't work. We have moved points so is always true.
+  if (ptMap2 != -1) { // we overlap a point
+    var otherPt = pointList[ptMap2[0]];
+    var oldX = (otherPt[0]-xOffset)*sized-boxSize-1;
+    var oldY = (otherPt[1]-yOffset)*sized-boxSize-1;
+    var i = ptMap2[1][0];
+    var j = ptMap2[1][1];
+    context.beginPath();
+    context.strokeStyle ="blue";
+    context.rect(oldX+i*Ax*sized+j*Bx*sized-1,oldY+i*Ay*sized+j*By*sized-1,boxSize*2+3,boxSize*2+3);
+    context.stroke();
+    context.closePath();
+  }
 
 
 // draw polygons
