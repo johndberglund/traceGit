@@ -140,13 +140,13 @@ function goReg() {
   draw();
 }
 
-function mapping(rawPt, mapping) {
+function mapPt(rawPt, mapping) {
   var X = rawPt[0]+mapping[0]*Ax + mapping[1]*Bx;
   var Y = rawPt[1]+mapping[0]*Ay + mapping[1]*By;
   return  [X,Y] ;
 }
 
-function invMap(rawPt, mapping) {
+function invMapPt(rawPt, mapping) {
   var X = rawPt[0]-mapping[0]*Ax - mapping[1]*Bx;
   var Y = rawPt[1]-mapping[0]*Ay - mapping[1]*By;
   return  [X,Y] ;
@@ -213,7 +213,7 @@ function avePolar(polyRawPolar,centPt) {
     var tNew = tBase + (vertNum+bestCount)*2*Math.PI/numVert;
     var newX = centPt[0] + rNew*Math.cos(tNew);
     var newY = centPt[1] + rNew*Math.sin(tNew);
-    var newPt = invMap([newX,newY], ptMapRawPolar[1]);
+    var newPt = invMapPt([newX,newY], ptMapRawPolar[1]);
     PtVoteList.push([ptMapRawPolar[0],newPt]);
     vertNum += 1;
   });
@@ -258,7 +258,7 @@ function polyRaw2Cent(polyRaw) {
 function polyAddRaw(poly) {
   var polyRaw = [];
   poly.forEach(function(ptMap) {
-    var rawPt = mapping(pointList[ptMap[0]],ptMap[1]);
+    var rawPt = mapPt(pointList[ptMap[0]],ptMap[1]);
     polyRaw.push([ptMap[0],ptMap[1],rawPt]);
   });
   return polyRaw;
@@ -303,6 +303,41 @@ function makeRegular() {
   // fixedPts.forEach(function(fixedPt) {pointList[fixedPt[0]]=fixedPt[1];});
 
 } // end makeRegular
+
+// compose two mappings. First map1() then map2()
+function composeMaps(map1, map2) {
+  return([map1[0]+map2[0],map1[1]+map2[1]]);
+}
+
+// returns the inverse of a mapping.
+function invMap(map) {
+  return([-map[0],-map[1]]);
+}
+
+// merges two points when you drag one atop the other.
+function mergePts() {
+  let oldPt = ptMap1[0];
+  let oldMap = ptMap1[1];
+  let newPt = ptMap2[0];
+  let newMap = ptMap2[1];
+  let jointMap = composeMaps(invMap(oldMap),newMap);
+//alert([ptMap1,ptMap2]);
+//alert(JSON.stringify(polyList));
+//alert(oldPt);
+  polyList.forEach(function(myPoly) {
+    myPoly.forEach(function(myPtMap) {
+      if (myPtMap[0] === oldPt) {
+//alert(myPtMap);
+        myPtMap[0]=newPt;
+        myPtMap[1]=composeMaps(jointMap,myPtMap[1]);
+//alert(["*",myPtMap]);
+      }
+
+    });
+  });
+
+}
+
 
 function txtToFile(content, filename, contentType) {
   const a = document.createElement('a');
@@ -446,7 +481,6 @@ function mouseMoved(event) {
 }
 
 function mouseClicked(event) {
-
   var c = document.getElementById("myCanvas");
   var cRect = c.getBoundingClientRect();        
   var canvasX = Math.round(event.clientX - cRect.left);  
@@ -455,7 +489,6 @@ function mouseClicked(event) {
   var ptMap= findPoint(posi);
   if (mode ===0) {drawPoint(ptMap);}
   if (mode ===1) {erasePoint(ptMap);}
-
   draw();
 }
 
@@ -476,6 +509,10 @@ function mousePressed(event) {
 }
 
 function mouseReleased(event) {
+  if (ptMap2 != -1) {
+//    alert([ptMap1, ptMap2]);
+    mergePts();
+  }
   if (posi1 != 0 && mode===4) {
     posi1 = 0;
   }
