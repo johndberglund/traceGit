@@ -121,7 +121,8 @@ function goErase() {
 }
 
 function goLock() {
-alert("We can't yet lock points");
+//alert("We can't yet lock points");
+dropUnused();
 //  mode = 2;
 }
 
@@ -321,21 +322,16 @@ function mergePts() {
   let newPt = ptMap2[0];
   let newMap = ptMap2[1];
   let jointMap = composeMaps(invMap(oldMap),newMap);
-//alert([ptMap1,ptMap2]);
-//alert(JSON.stringify(polyList));
-//alert(oldPt);
   polyList.forEach(function(myPoly) {
     myPoly.forEach(function(myPtMap) {
       if (myPtMap[0] === oldPt) {
-//alert(myPtMap);
         myPtMap[0]=newPt;
         myPtMap[1]=composeMaps(jointMap,myPtMap[1]);
-//alert(["*",myPtMap]);
       }
-
     });
   });
-
+  ptMap2 = -1;
+  dropUnused();
 }
 
 
@@ -641,6 +637,33 @@ function loadMyImage() {
   if (file) {
     reader.readAsDataURL(file);
   }
+}
+
+// drop unused points
+function dropUnused() {
+  let usedPts = [];
+  for (let i = 0; i<pointList.length; i++) {
+    usedPts.push(-1);
+  }
+  polyList.forEach(function(myPoly) {
+    myPoly.forEach(function(myPoint) {
+      usedPts[myPoint[0]] = 1;
+    });
+  });
+  let newPtList = [];
+  for (let i = 0; i<usedPts.length; i++) {
+    if (usedPts[i]>-1) {
+      usedPts[i] = newPtList.length;
+      newPtList.push(pointList[i]);
+    }
+  }
+  polyList.forEach(function(myPoly) {
+    myPoly.forEach(function(myPoint) {
+      myPoint[0] = usedPts[myPoint[0]];
+    });
+  });
+  pointList = JSON.parse(JSON.stringify(newPtList));
+  draw();
 }
 
 
