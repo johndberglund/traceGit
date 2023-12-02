@@ -296,7 +296,6 @@ function makeRegular() {
       pointList[avePtVote[i][0]] = [avePtVote[i][1][0],avePtVote[i][1][1],1];
     }
   }
-alert(JSON.stringify(pointList));
 } // end makeRegular
 
 // compose two mappings. First map1() then map2()
