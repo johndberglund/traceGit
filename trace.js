@@ -10,6 +10,7 @@ var posi1=0;
 var ptMap1;
 var ptMap2 = -1;
 var oldPoint;
+// pointList will have points stored as [X,Y,locked?] (1 = unlocked. -1 = locked)
 var pointList = [];
 var fixedList = [];
 var curPoly = [];
@@ -122,8 +123,7 @@ function goErase() {
 
 function goLock() {
 //alert("We can't yet lock points");
-dropUnused();
-//  mode = 2;
+  mode = 2;
 }
 
 function goExplode() {
@@ -273,11 +273,9 @@ function makeRegular() {
     var centPt = polyRaw2Cent(polyRaw);
     var polyRawPolar = addPolar(polyRaw, centPt);
     // sort by descending angle so all polygons have same orientation
- //   polyRawPolar.sort((A,B)=> B[3][1]-A[3][1]);
+    // polyRawPolar.sort((A,B)=> B[3][1]-A[3][1]);
     PtVoteList = PtVoteList.concat(avePolar(polyRawPolar,centPt));
-
   });
-
   // sort point list by index
   PtVoteList.sort((A,B) => A[0]-B[0]);
   var curPt = 0;
@@ -293,16 +291,12 @@ function makeRegular() {
       };
   });
   avePtVote.push([curPt,avePts(votesByPt)]);
-  // don't move any fixed points - currently none.
-//  var fixedPts = [];
-//  for (counter = 0;counter<pointList.length;counter++) {
-//    if (pointList[counter][0]===0) {fixedPts[counter]=[counter,pointList[counter]] }
-//  }; 
   for (i = 0;i<avePtVote.length;i++) {
-    pointList[avePtVote[i][0]] = avePtVote[i][1];
+    if (pointList[avePtVote[i][0]][2] === 1) {
+      pointList[avePtVote[i][0]] = [avePtVote[i][1][0],avePtVote[i][1][1],1];
+    }
   }
-  // fixedPts.forEach(function(fixedPt) {pointList[fixedPt[0]]=fixedPt[1];});
-
+alert(JSON.stringify(pointList));
 } // end makeRegular
 
 // compose two mappings. First map1() then map2()
@@ -447,19 +441,17 @@ function mouseMoved(event) {
   var cRect = c.getBoundingClientRect();        
   var canvasX = Math.round(event.clientX - cRect.left);  
   var canvasY = Math.round(event.clientY - cRect.top);
-  posi = [canvasX/sized+xOffset,canvasY/sized+yOffset];
+  posi = [canvasX/sized+xOffset,canvasY/sized+yOffset,1];
 
 //move points
   if (posi1 != 0 && mode===4) {
-//    posi = [canvasX/sized+xOffset,canvasY/sized+yOffset];
     ptMap2 = findNewPoint(posi);
     pointList[ptMap1[0]]=[oldPoint[0]-posi1[0]+posi[0],
-                          oldPoint[1]-posi1[1]+posi[1]];
+                          oldPoint[1]-posi1[1]+posi[1],1];
     draw();
   }
 //move vectors
   if (posi1 != 0 && mode>4) {
-//    posi = [canvasX/sized+xOffset,canvasY/sized+yOffset];
     if (mode ===5) {
       baseX = oldPoint[0]-posi1[0]+posi[0];
       baseY = oldPoint[1]-posi1[1]+posi[1];
@@ -481,15 +473,18 @@ function mouseClicked(event) {
   var cRect = c.getBoundingClientRect();        
   var canvasX = Math.round(event.clientX - cRect.left);  
   var canvasY = Math.round(event.clientY - cRect.top);
-  posi = [canvasX/sized+xOffset,canvasY/sized+yOffset];
+  posi = [canvasX/sized+xOffset,canvasY/sized+yOffset, 1];
   var ptMap= findPoint(posi);
   if (mode ===0) {drawPoint(ptMap);}
   if (mode ===1) {erasePoint(ptMap);}
+  if (mode ===2) {lockPoint(ptMap);}
+  if (mode ===3) {bombPoint(ptMap);}
   draw();
 }
 
 function mousePressed(event) {
   if (posi1 === 0 && mode===4) {
+    // move point
     var c = document.getElementById("myCanvas");
     var cRect = c.getBoundingClientRect();        
     var canvasX = Math.round(event.clientX - cRect.left);  
@@ -497,16 +492,24 @@ function mousePressed(event) {
     posi1 = [canvasX/sized+xOffset,canvasY/sized+yOffset];
     ptMap1= findPoint(posi1);
     if (ptMap1[0]<0) { 
+      // not on point
       mode = onVector();
       if (mode===4) {posi1=0;}
     }
-    else { oldPoint = pointList[ptMap1[0]]; }
+    else { 
+      if (pointList[ptMap1[0]][2] === 1) {
+        // unlocked
+        oldPoint = pointList[ptMap1[0]]; 
+      } else {
+        // locked
+        posi1 = 0;
+      }
+    }
   }
 }
 
 function mouseReleased(event) {
   if (ptMap2 != -1) {
-//    alert([ptMap1, ptMap2]);
     mergePts();
   }
   if (posi1 != 0 && mode===4) {
@@ -575,6 +578,16 @@ function drawPoint(ptMap) {
   else {
     curPoly.push(ptMap); 
     }
+}
+
+function lockPoint(ptMap) {
+  if (ptMap[0] >-1) {
+    pointList[ptMap[0]][2] *= -1;
+  }
+}
+
+function bombPoint(ptMap) {
+  
 }
 
 function loadMyTiling() {
@@ -720,6 +733,7 @@ context.scale(1/sized,1/sized);
         context.beginPath();
         context.strokeStyle ="rgb(255,90,90)";
         if (i===0 && j===0) {context.strokeStyle ="red";}
+        if (point[2] === -1) {context.strokeStyle ="black";}
         context.rect(oldX+i*Ax*sized+j*Bx*sized,oldY+i*Ay*sized+j*By*sized,boxSize*2+1,boxSize*2+1);
         context.stroke();
         context.closePath();
@@ -728,8 +742,7 @@ context.scale(1/sized,1/sized);
   });
 
 
-//I want this to outline if we move a point to overlap another.
-//this doesn't work. We have moved points so is always true.
+// blue outline if a moved point overlaps another
   if (ptMap2 != -1) { // we overlap a point
     var otherPt = pointList[ptMap2[0]];
     var oldX = (otherPt[0]-xOffset)*sized-boxSize-1;
