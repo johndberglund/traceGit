@@ -291,7 +291,7 @@ function makeRegular() {
   avePtVote.push([curPt,avePts(votesByPt)]);
   for (i = 0;i<avePtVote.length;i++) {
     if (pointList[avePtVote[i][0]][2] === 1) {
-      pointList[avePtVote[i][0]] = [avePtVote[i][1][0],avePtVote[i][1][1]]; // ***
+      pointList[avePtVote[i][0]] = [avePtVote[i][1][0],avePtVote[i][1][1],1]; 
     }
   }
 } // end makeRegular
@@ -438,13 +438,13 @@ function mouseMoved(event) {
   var cRect = c.getBoundingClientRect();        
   var canvasX = Math.round(event.clientX - cRect.left);  
   var canvasY = Math.round(event.clientY - cRect.top);
-  posi = [canvasX/sized+xOffset,canvasY/sized+yOffset]; // ***
+  posi = [canvasX/sized+xOffset,canvasY/sized+yOffset,1];
 
 //move points
   if (posi1 != 0 && mode===4) {
     ptMap2 = findNewPoint(posi);
     pointList[ptMap1[0]]=[oldPoint[0]-posi1[0]+posi[0],
-                          oldPoint[1]-posi1[1]+posi[1],1]; //***ok
+                          oldPoint[1]-posi1[1]+posi[1],1];
     draw();
   }
 //move vectors
@@ -470,7 +470,7 @@ function mouseClicked(event) {
   var cRect = c.getBoundingClientRect();        
   var canvasX = Math.round(event.clientX - cRect.left);  
   var canvasY = Math.round(event.clientY - cRect.top);
-  posi = [canvasX/sized+xOffset,canvasY/sized+yOffset,1]; // ***ok
+  posi = [canvasX/sized+xOffset,canvasY/sized+yOffset,1]; 
   var ptMap= findPoint(posi);
   if (mode ===0) {drawPoint(ptMap);}
   if (mode ===1) {erasePoint(ptMap);}
@@ -563,8 +563,8 @@ function erasePoint(ptMap) {
 function drawPoint(ptMap) {
 //add new point
   if (ptMap[0]<0) { 
-    ptMap= [pointList.length,[0,0]]; // ***
-    pointList.push(posi); // ***
+    ptMap= [pointList.length,[0,0]]; // crashes if you add lock...
+    pointList.push(posi); 
   }
 //if we return to polygon starting point
   if (JSON.stringify(ptMap) === JSON.stringify(curPoly[0])) {
