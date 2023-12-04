@@ -122,13 +122,11 @@ function goErase() {
 }
 
 function goLock() {
-//alert("We can't yet lock points");
   mode = 2;
 }
 
 function goExplode() {
-alert("We can't yet explode points.");
-//  mode = 3;
+  mode = 3;
 }
 
 function goMove() {
@@ -293,7 +291,7 @@ function makeRegular() {
   avePtVote.push([curPt,avePts(votesByPt)]);
   for (i = 0;i<avePtVote.length;i++) {
     if (pointList[avePtVote[i][0]][2] === 1) {
-      pointList[avePtVote[i][0]] = [avePtVote[i][1][0],avePtVote[i][1][1],1];
+      pointList[avePtVote[i][0]] = [avePtVote[i][1][0],avePtVote[i][1][1]]; // ***
     }
   }
 } // end makeRegular
@@ -440,13 +438,13 @@ function mouseMoved(event) {
   var cRect = c.getBoundingClientRect();        
   var canvasX = Math.round(event.clientX - cRect.left);  
   var canvasY = Math.round(event.clientY - cRect.top);
-  posi = [canvasX/sized+xOffset,canvasY/sized+yOffset,1];
+  posi = [canvasX/sized+xOffset,canvasY/sized+yOffset]; // ***
 
 //move points
   if (posi1 != 0 && mode===4) {
     ptMap2 = findNewPoint(posi);
     pointList[ptMap1[0]]=[oldPoint[0]-posi1[0]+posi[0],
-                          oldPoint[1]-posi1[1]+posi[1],1];
+                          oldPoint[1]-posi1[1]+posi[1],1]; //***ok
     draw();
   }
 //move vectors
@@ -472,7 +470,7 @@ function mouseClicked(event) {
   var cRect = c.getBoundingClientRect();        
   var canvasX = Math.round(event.clientX - cRect.left);  
   var canvasY = Math.round(event.clientY - cRect.top);
-  posi = [canvasX/sized+xOffset,canvasY/sized+yOffset, 1];
+  posi = [canvasX/sized+xOffset,canvasY/sized+yOffset,1]; // ***ok
   var ptMap= findPoint(posi);
   if (mode ===0) {drawPoint(ptMap);}
   if (mode ===1) {erasePoint(ptMap);}
@@ -565,8 +563,8 @@ function erasePoint(ptMap) {
 function drawPoint(ptMap) {
 //add new point
   if (ptMap[0]<0) { 
-    ptMap= [pointList.length,[0,0]]; 
-    pointList.push(posi);
+    ptMap= [pointList.length,[0,0]]; // ***
+    pointList.push(posi); // ***
   }
 //if we return to polygon starting point
   if (JSON.stringify(ptMap) === JSON.stringify(curPoly[0])) {
@@ -586,7 +584,17 @@ function lockPoint(ptMap) {
 }
 
 function bombPoint(ptMap) {
-  
+  polyList.forEach(function(myPoly) {
+    myPoly.forEach(function(myPtMap) {
+      if (myPtMap[0] === ptMap[0]) {
+        myPtMap[0] = pointList.length;
+        pointList.push(pointList[ptMap[0]]);
+      } // end if
+    }); // end myPoly loop
+  }); // end polyList loop
+  document.getElementById("move").checked = true;
+  mode = 4;
+  dropUnused();
 }
 
 function loadMyTiling() {
@@ -658,8 +666,8 @@ function dropUnused() {
     usedPts.push(-1);
   }
   polyList.forEach(function(myPoly) {
-    myPoly.forEach(function(myPoint) {
-      usedPts[myPoint[0]] = 1;
+    myPoly.forEach(function(myPtMap) {
+      usedPts[myPtMap[0]] = 1;
     });
   });
   let newPtList = [];
@@ -670,8 +678,8 @@ function dropUnused() {
     }
   }
   polyList.forEach(function(myPoly) {
-    myPoly.forEach(function(myPoint) {
-      myPoint[0] = usedPts[myPoint[0]];
+    myPoly.forEach(function(myPtMap) {
+      myPtMap[0] = usedPts[myPtMap[0]];
     });
   });
   pointList = JSON.parse(JSON.stringify(newPtList));
