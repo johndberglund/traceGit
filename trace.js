@@ -44,6 +44,7 @@ function init() {
   d.style.maxHeight= window.innerHeight-110 + "px";
   d.style.height = window.innerHeight-110 + "px";
   d.style.maxWidth= window.innerWidth-170 + "px";
+do2024();
   draw();
 }
 
@@ -60,6 +61,42 @@ function resize() {
   c.height = (window.innerHeight-135)*sized;
   c.width = (window.innerWidth-195)*sized;
   draw(); }
+}
+
+function do2024() {
+/*
+  Ax = 2000;
+  By = 2000;
+  let newPoly = [];
+  for (let i = 0; i<2024;i++) {
+    let newAngle = i/2024*2*Math.PI;
+    let newX = Math.cos(newAngle)*322.13;
+    let newY = Math.sin(newAngle)*322.13;
+    pointList.push([newX,newY,-1]); // -1 since locked
+    newPoly.push([i,[0,0]]);
+  }
+  polyList.push(newPoly);
+
+  newPoly = [];
+  for (let i = 0; i<1248;i++) {
+    let newAngle = i/1248*2*Math.PI;
+    let newX = Math.cos(newAngle)*199.36;
+    let newY = Math.sin(newAngle)*199.36 + 523.23;
+    pointList.push([newX,newY,-1]); // -1 since locked
+    newPoly.push([i+2024,[0,0]]);
+  }
+  polyList.push(newPoly);
+
+  newPoly = [];
+  for (let i = 0; i<1248;i++) {
+    let newAngle = i/1248*2*Math.PI;
+    let newX = Math.cos(newAngle)*199.36 + 369.98;
+    let newY = Math.sin(newAngle)*199.36 + 369.98;
+    pointList.push([newX,newY,-1]); // -1 since locked
+    newPoly.push([i+2024+1248,[0,0]]);
+  }
+  polyList.push(newPoly);
+*/
 }
 
 
@@ -352,7 +389,8 @@ function goSave() {
     });
   });
   asOutput = asOutput.concat("end"+"\r\n");
-  txtToFile(asOutput,"myTiles","txt");
+  let thisFile = document.getElementById("myFile").value;
+  txtToFile(asOutput,thisFile,"txt");
 }
 
 function svgToFile(content, filename, contentType) {
@@ -379,7 +417,8 @@ function goSvg() {
   });
 
   asOutput = asOutput.concat('</svg>');
-  svgToFile(asOutput,"myTiles","svg");
+  let thisFile = document.getElementById("myFile").value;
+  svgToFile(asOutput,thisFile,"svg");
 }
 
 // find point close to current point, or -1 if none.
