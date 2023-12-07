@@ -337,7 +337,7 @@ function makeRegular() {
   });
   avePtVote.push([curPt,avePts(votesByPt)]);
   for (i = 0;i<avePtVote.length;i++) {
-    if (pointList[avePtVote[i][0]][2] === 1) {
+    if (pointList[avePtVote[i][0]][2] === 1) { // only move unlocked points
       pointList[avePtVote[i][0]] = [avePtVote[i][1][0],avePtVote[i][1][1],1]; 
     }
   }
@@ -390,7 +390,7 @@ function goSave() {
   asOutput = asOutput.concat(""+Bx+","+By+"\r\n");
   asOutput = asOutput.concat("points:"+"\r\n");
   pointList.forEach(function(point) {
-    asOutput = asOutput.concat(""+point[0]+","+point[1]+"\r\n");
+    asOutput = asOutput.concat(""+point[0]+","+point[1]+","+point[2]+"\r\n");
   });
   polyList.forEach(function(poly) {
     asOutput = asOutput.concat("poly:"+"\r\n");
@@ -666,7 +666,14 @@ function loadMyTiling() {
       var coords = lines[i].split(",");
       if (i===1) {Ax = coords[0],Ay=coords[1]}
       if (i===2) {Bx = coords[0],By=coords[1]}
-      if (setPoly === 1) {pointList.push([parseFloat(coords[0]),parseFloat(coords[1])]);}   
+
+      if (setPoly === 1) {
+        if (coords.length === 2) {
+          pointList.push([parseFloat(coords[0]),parseFloat(coords[1]),1]);
+        }  else {
+          pointList.push([parseFloat(coords[0]),parseFloat(coords[1]),parseFloat(coords[2])]);
+        } 
+      }
       if (setPoly === 2) {
         curPoly.push( [parseInt(coords[0]),[parseInt(coords[1]),parseInt(coords[2])]] );
         if (lines[i+1] === "poly:") {polyList.push(curPoly);curPoly = [];};
