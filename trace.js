@@ -64,39 +64,49 @@ function resize() {
 }
 
 function do2024() {
-/*
-  Ax = 2000;
-  By = 2000;
+let xMult = 2;
+let yMult = 2;
+let yAdder = -220;
+sized = 12;
+yOffset = 180;
+xOffset = -10;
+  var c = document.getElementById("myCanvas");
+  var context = c.getContext("2d");
+  c.height = (window.innerHeight-135)*sized;
+  c.width = (window.innerWidth-195)*sized;
+
+  Ax = 20000;
+  By = 20000;
   let newPoly = [];
-  for (let i = 0; i<2024;i++) {
+  for (let i = 253; i<507;i++) {
     let newAngle = i/2024*2*Math.PI;
-    let newX = Math.cos(newAngle)*322.13;
-    let newY = Math.sin(newAngle)*322.13;
+    let newX = (Math.cos(newAngle)*322.13)*xMult;
+    let newY = (Math.sin(newAngle)*322.13+yAdder)*yMult;
     pointList.push([newX,newY,-1]); // -1 since locked
-    newPoly.push([i,[0,0]]);
+    newPoly.push([i-253,[0,0]]);
   }
   polyList.push(newPoly);
 
   newPoly = [];
-  for (let i = 0; i<1248;i++) {
+  for (let i = 936; i<1171;i++) {
     let newAngle = i/1248*2*Math.PI;
-    let newX = Math.cos(newAngle)*199.36;
-    let newY = Math.sin(newAngle)*199.36 + 523.23;
+    let newX = (Math.cos(newAngle)*199.36)*xMult;
+    let newY = (Math.sin(newAngle)*199.36 + 523.23+yAdder)*yMult;
     pointList.push([newX,newY,-1]); // -1 since locked
-    newPoly.push([i+2024,[0,0]]);
+    newPoly.push([i-936+253+1,[0,0]]);
   }
   polyList.push(newPoly);
 
   newPoly = [];
-  for (let i = 0; i<1248;i++) {
+  for (let i = 546; i<781;i++) {
     let newAngle = i/1248*2*Math.PI;
-    let newX = Math.cos(newAngle)*199.36 + 369.98;
-    let newY = Math.sin(newAngle)*199.36 + 369.98;
+    let newX = (Math.cos(newAngle)*199.36 + 369.98)*xMult;
+    let newY = (Math.sin(newAngle)*199.36 + 369.98+yAdder)*yMult;
     pointList.push([newX,newY,-1]); // -1 since locked
-    newPoly.push([i+2024+1248,[0,0]]);
+    newPoly.push([i-546+253+234+2,[0,0]]);
   }
   polyList.push(newPoly);
-*/
+
 }
 
 
