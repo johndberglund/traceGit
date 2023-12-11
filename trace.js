@@ -44,7 +44,7 @@ function init() {
   d.style.maxHeight= window.innerHeight-110 + "px";
   d.style.height = window.innerHeight-110 + "px";
   d.style.maxWidth= window.innerWidth-170 + "px";
-do2024();
+//do2024();
   draw();
 }
 
@@ -186,6 +186,11 @@ function goReg() {
   draw();
 }
 
+function goReg2() {
+  makeRegular2();
+  draw();
+}
+
 function mapPt(rawPt, mapping) {
   var X = rawPt[0]+mapping[0]*Ax + mapping[1]*Bx;
   var Y = rawPt[1]+mapping[0]*Ay + mapping[1]*By;
@@ -266,6 +271,54 @@ function avePolar(polyRawPolar,centPt) {
   return (PtVoteList);
 } // end avePolar
 
+function avePolar2(polyRawPolar,centPt, bestLen) {
+//  var rNew = 0;
+  var tBase = 0;
+  var vertNum = 0;
+  var numVert = polyRawPolar.length;
+//alert(bestLen);
+  var rNew = bestLen/2/Math.sin(Math.PI/numVert);
+
+  polyRawPolar.forEach(function(ptMapRawPolar) {
+    vertNum += 1;
+ //   rNew += ptMapRawPolar[3][0];
+    var addBaseT = ptMapRawPolar[3][1] + vertNum*2*Math.PI/numVert;
+    addBaseT %= (2*Math.PI);
+    addBaseT += (2*Math.PI);
+    addBaseT %= (2*Math.PI);
+    if (addBaseT>Math.PI) {addBaseT -= (2*Math.PI)};
+    tBase += addBaseT;
+  });
+  tBase /= numVert;
+//  rNew /= numVert;
+  var PtVoteList = [];
+  var maxDist = rNew*numVert*2;
+  var bestCount = 10;
+  for (counter = -2;counter<3;counter++) {
+    var sumDist = 0;
+    vertNum = 0;
+    polyRawPolar.forEach(function(ptMapRawPolar) {
+      vertNum += 1;
+      var tNew = tBase - (vertNum+counter)*2*Math.PI/numVert;
+      var newX = centPt[0] + rNew*Math.cos(tNew);
+      var newY = centPt[1] + rNew*Math.sin(tNew);
+      var thisDist = Math.sqrt((newX-ptMapRawPolar[2][0])**2+(newY-ptMapRawPolar[2][1])**2);
+      sumDist += thisDist;
+    });
+    if (sumDist<maxDist) {maxDist = sumDist; bestCount=counter;};
+  } // end counter
+  vertNum = 0;
+  polyRawPolar.forEach(function(ptMapRawPolar) {
+    vertNum += 1;
+    var tNew = tBase - (vertNum+bestCount)*2*Math.PI/numVert;
+    var newX = centPt[0] + rNew*Math.cos(tNew);
+    var newY = centPt[1] + rNew*Math.sin(tNew);
+    var newPt = invMap([newX,newY], ptMapRawPolar[1]);
+    PtVoteList.push([ptMapRawPolar[0],newPt]);
+  });
+  return (PtVoteList);
+} // end avePolar2()
+
 function rect2Polar(rect) {
   var x = rect[0];
   var y = rect[1];
@@ -342,6 +395,58 @@ function makeRegular() {
     }
   }
 } // end makeRegular
+
+// this will try to make the polygons regular. It aims at all edges the same length.
+function makeRegular2() {
+  var bestLen = avEdgeLen();
+  var PtVoteList = [];
+  polyList.forEach(function(poly) {
+    var polyRaw = polyAddRaw(poly);
+    var centPt = polyRaw2Cent(polyRaw);
+    var polyRawPolar = addPolar(polyRaw, centPt);
+    // sort by descending angle so all polygons have same orientation
+    polyRawPolar.sort((A,B)=> B[3][1]-A[3][1]);
+    PtVoteList = PtVoteList.concat(avePolar2(polyRawPolar,centPt,bestLen));
+  });
+  // sort point list by index
+  PtVoteList.sort((A,B) => A[0]-B[0]);
+  var curPt = 0;
+  var votesByPt = [];
+  var avePtVote=[];
+  // average all votes for where to move the point
+  PtVoteList.forEach(function(ptVote) {
+    if (curPt === ptVote[0]) {votesByPt.push(ptVote[1]);}
+    else { 
+      avePtVote.push([curPt,avePts(votesByPt)]);
+      curPt = ptVote[0];
+      votesByPt = [ptVote[1]];
+      };
+  });
+  avePtVote.push([curPt,avePts(votesByPt)]);
+
+  for (i = 0;i<avePtVote.length;i++) {
+    if (pointList[avePtVote[i][0]][2] === 1) { // only move unlocked points
+      pointList[avePtVote[i][0]] = [avePtVote[i][1][0],avePtVote[i][1][1],1]; 
+    }
+  }
+} // end makeRegular2
+
+// find average edge length
+function avEdgeLen() {
+  var edgeLens = [];
+  polyList.forEach(function(poly) {
+    var lastPtMap = poly[poly.length-1];
+    var lastRawPt = mapPt(pointList[lastPtMap[0]],lastPtMap[1]);
+    poly.forEach(function(ptMap) {
+      var rawPt = mapPt(pointList[ptMap[0]],ptMap[1]);
+      var length = Math.sqrt((lastRawPt[0]-rawPt[0])**2+(lastRawPt[1]-rawPt[1])**2);
+      edgeLens.push(length);
+      lastPtMap = ptMap;
+      lastRawPt = rawPt;
+    });   
+  });
+  return(edgeLens.reduce((A,B) => A+B, 0) / edgeLens.length);
+}
 
 // compose two mappings. First map1() then map2()
 function composeMaps(map1, map2) {
