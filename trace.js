@@ -313,7 +313,7 @@ function avePolar2(polyRawPolar,centPt, bestLen) {
     var tNew = tBase - (vertNum+bestCount)*2*Math.PI/numVert;
     var newX = centPt[0] + rNew*Math.cos(tNew);
     var newY = centPt[1] + rNew*Math.sin(tNew);
-    var newPt = invMap([newX,newY], ptMapRawPolar[1]);
+    var newPt = invMapPt([newX,newY], ptMapRawPolar[1]); 
     PtVoteList.push([ptMapRawPolar[0],newPt]);
   });
   return (PtVoteList);
@@ -395,6 +395,17 @@ function makeRegular() {
     }
   }
 } // end makeRegular
+
+// functions used in makeRegular2()...
+// avEdgeLen() 
+// polyAddRaw(poly) 
+// polyRaw2Cent(polyRaw) 
+// addPolar(polyRaw, centPt) 
+// avePolar2(polyRawPolar,centPt,bestLen) 
+// avePts(votesByPt)
+// mapPt(pointList[lastPtMap[0]],lastPtMap[1]) 
+// rect2Polar([vecX, vecY]) 
+// invMapPt([newX,newY], ptMapRawPolar[1]);
 
 // this will try to make the polygons regular. It aims at all edges the same length.
 function makeRegular2() {
