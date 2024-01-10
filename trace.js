@@ -131,13 +131,13 @@ xOffset -= 50;
 
 function goUp() {
 //  if (yOffset < h-10) {yOffset += 10;}
-yOffset += 10;
+yOffset += 16;
   draw();
 }
 
 function goDown() {
 //  if (yOffset>=10) {yOffset -= 10;}
-yOffset -= 10;
+yOffset -= 16;
   draw();
 }
 
