@@ -299,6 +299,8 @@ function avePolar(polyRawPolar,centPt) {
 } // end avePolar
 
 function avePolar2(polyRawPolar,centPt, bestLen) {
+// input polygon, center and best edge length, average the polar coordinates to find best fit regular polygon, 
+// output vote where to move pointList, (have the polygons given clockwise.)
 //  var rNew = 0;
   var tBase = 0;
   var vertNum = 0;
@@ -477,6 +479,23 @@ function avEdgeLen() {
   return(edgeLens.reduce((A,B) => A+B, 0) / edgeLens.length);
 }
 
+function minEdgeLen() {
+// find minimum edge length
+  let minLen = Ax+Ay+Bx+By;
+  polyList.forEach(function(poly) {
+    var lastPtMap = poly[poly.length-1];
+    var lastRawPt = mapPt(pointList[lastPtMap[0]],lastPtMap[1]);
+    poly.forEach(function(ptMap) {
+      var rawPt = mapPt(pointList[ptMap[0]],ptMap[1]);
+      var length = Math.sqrt((lastRawPt[0]-rawPt[0])**2+(lastRawPt[1]-rawPt[1])**2);
+      if (length < minLen) {minLen = length}
+      lastPtMap = ptMap;
+      lastRawPt = rawPt;
+    });   
+  });
+  return(minLen);
+}
+
 function composeMaps(map1, map2) {
 // compose two mappings. First map1() then map2()
   return([map1[0]+map2[0],map1[1]+map2[1]]);
@@ -488,12 +507,19 @@ function invMap(map) {
   return([-map[0],-map[1]]);
 }
 
-function mergePts() {
+function dragMergePts() {
 // merges two points when you drag one atop the other.
-  let oldPt = ptMap1[0];
-  let oldMap = ptMap1[1];
-  let newPt = ptMap2[0];
-  let newMap = ptMap2[1];
+  mergePts(ptMap1,ptMap2);
+  ptMap2 = -1;
+  dropUnused();
+}
+
+function mergePts(keepPtMap, mergePtMap) {
+// this replaces mergePtMap with keepPtMap in polyList. Doesn't drop unused.
+  let oldPt = keepPtMap[0];
+  let oldMap = keepPtMap[1];
+  let newPt = mergePtMap[0];
+  let newMap = mergePtMap[1];
   let jointMap = composeMaps(invMap(oldMap),newMap);
   polyList.forEach(function(myPoly) {
     myPoly.forEach(function(myPtMap) {
@@ -503,8 +529,6 @@ function mergePts() {
       }
     });
   });
-  ptMap2 = -1;
-  dropUnused();
 }
 
 function txtToFile(content, filename, contentType) {
@@ -689,7 +713,7 @@ function mousePressed(event) {
 
 function mouseReleased(event) {
   if (ptMap2 != -1) {
-    mergePts();
+    dragMergePts();
   }
   if (posi1 != 0 && mode===4) {
     posi1 = 0;
@@ -796,8 +820,8 @@ function loadMyTiling() {
       if (lines[i] === "poly:") { setPoly = 2; curPoly = []; continue;}
       if (lines[i] === "end") { draw(); break;}
       var coords = lines[i].split(",");
-      if (i===1) {Ax = coords[0],Ay=coords[1]}
-      if (i===2) {Bx = coords[0],By=coords[1]}
+      if (i===1) {Ax = parseFloat(coords[0]);Ay=parseFloat(coords[1])}
+      if (i===2) {Bx = parseFloat(coords[0]);By=parseFloat(coords[1])}
 
       if (setPoly === 1) {
         if (coords.length === 2) {
@@ -836,8 +860,8 @@ function mergeMyTiling() {
       if (lines[i] === "poly:") { setPoly = 2; curPoly = []; continue;}
       if (lines[i] === "end") { draw(); break;}
       var coords = lines[i].split(",");
-      if (i===1) {newAx = coords[0],newAy=coords[1]}
-      if (i===2) {newBx = coords[0],newBy=coords[1]}
+      if (i===1) {newAx = parseFloat(coords[0]);newAy=parseFloat(coords[1])}
+      if (i===2) {newBx = parseFloat(coords[0]);newBy=parseFloat(coords[1])}
 
       if (setPoly === 1) {
         if (coords.length === 2) {
@@ -853,7 +877,9 @@ function mergeMyTiling() {
       }
     }
     if (newAx === Ax && newAy === Ay && newBx === Bx && newBy === By) {
-      
+      let oldPtLen = pointList.length;
+      mergeAdd();
+      mergeDropDup(oldPtLen);
     } else {
       alert("We can only merge if vectors match.");
     }
@@ -865,10 +891,10 @@ function mergeMyTiling() {
 } // end mergeMyTiling()
 
 function mergeAdd() {
-
+  
 }
 
-function mergeDropDup() {
+function mergeDropDup(oldPtLen) {
 
 }
 
@@ -948,7 +974,6 @@ context.scale(sized,sized);
 context.scale(1/sized,1/sized);
   }
 
-
 // draw vectors
   context.lineWidth = 2;
   context.strokeStyle ="green";
@@ -987,7 +1012,6 @@ context.scale(1/sized,1/sized);
     }
   });
 
-
 // blue outline if a moved point overlaps another
   if (ptMap2 != -1) { // we overlap a point
     var otherPt = pointList[ptMap2[0]];
@@ -1001,7 +1025,6 @@ context.scale(1/sized,1/sized);
     context.stroke();
     context.closePath();
   }
-
 
 // draw polygons
   context.lineWidth = 1;
