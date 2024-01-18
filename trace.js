@@ -392,7 +392,6 @@ function polyAddRaw(poly) {
   return polyRaw;
 }
 
-
 function makeRegular() {
 // this will try to make the polygons regular
   var PtVoteList = [];
@@ -500,7 +499,6 @@ function composeMaps(map1, map2) {
 // compose two mappings. First map1() then map2()
   return([map1[0]+map2[0],map1[1]+map2[1]]);
 }
-
 
 function invMap(map) {
 // returns the inverse of a mapping.
@@ -878,7 +876,7 @@ function mergeMyTiling() {
     }
     if (newAx === Ax && newAy === Ay && newBx === Bx && newBy === By) {
       let oldPtLen = pointList.length;
-      mergeAdd();
+      mergeAdd(oldPtLen);
       mergeDropDup(oldPtLen);
     } else {
       alert("We can only merge if vectors match.");
@@ -890,12 +888,45 @@ function mergeMyTiling() {
   }
 } // end mergeMyTiling()
 
-function mergeAdd() {
-  
+function mergeAdd(oldPtLen) {
+  pointList = pointList.concat(newPointList);
+  newPolyList.forEach(function(myNewPoly) {
+    myNewPoly.forEach(function(myPoint) {
+      myPoint[0] += oldPtLen;
+    });
+  });
+  polyList = polyList.concat(newPolyList);
 }
 
 function mergeDropDup(oldPtLen) {
+  let joinDist = minEdgeLen()/4;
+  for (let i = 0;i<oldPtLen;i++) {
+    for (let j = oldPtLen;j<pointList.length;j++) {
 
+    }
+  }
+}
+
+function mergeFindPt(point) {
+// find point close to current point, or -1 if none. BUT exclude point ptMap1
+  let newPt = newCoords(point,[Ax,Ay],[Bx,By]);
+//  let i = Math.round(newPt[0]);
+//  let j = Math.round(newPt[1]);
+//  newPt[0] = point[0]-i*Ax-j*Bx;
+//  newPt[1] = point[1]-i*Ay-j*By;
+  for (pt = 0;pt<pointList.length;pt++) {
+    if (pt != ptMap1[0]) {
+      let newPt2 = newCoords(pointList[pt],[Ax,Ay],[Bx,By]);
+//      let i2 = Math.round(newPt2[0]);
+//      let j2 = Math.round(newPt2[1]);
+//      newPt2[0] = pointList[pt][0]-i2*Ax-j2*Bx;
+//      newPt2[1] = pointList[pt][1]-i2*Ay-j2*By;
+      if (Math.abs(newPt[0]-newPt2[0])<=boxSize/sized 
+        && Math.abs(newPt[1]-newPt2[1])<=boxSize/sized)
+      {return [pt,[i-i2,j-j2]];}
+    }
+  }
+  return([-1]);
 }
 
 function loadMyImage() {
