@@ -643,10 +643,20 @@ function mouseMoved(event) {
   var canvasX = Math.round(event.clientX - cRect.left);  
   var canvasY = Math.round(event.clientY - cRect.top);
   posi = [canvasX/sized+xOffset,canvasY/sized+yOffset,1];
+  let pointName = JSON.stringify(findPoint(posi));
+
+  if (pointName === "[-1]") {document.getElementById("coords").value="("+canvasX+","+canvasY+")"
+;
+  } else {
+    document.getElementById("coords").value="point: "+pointName;
+  }
 
 //move points
   if (posi1 != 0 && mode===4) {
     ptMap2 = findNewPoint(posi);
+//document.getElementById("coords").value = JSON.stringify(ptMap2);
+
+
     pointList[ptMap1[0]]=[oldPoint[0]-posi1[0]+posi[0],
                           oldPoint[1]-posi1[1]+posi[1],1];
     draw();
@@ -876,8 +886,10 @@ function mergeMyTiling() {
     }
     if (newAx === Ax && newAy === Ay && newBx === Bx && newBy === By) {
       let oldPtLen = pointList.length;
+      let oldPolyLen = polyList.length;
       mergeAdd(oldPtLen);
-      mergeDropDup(oldPtLen);
+      mergeDropDup(oldPtLen,oldPolyLen);
+      draw();
     } else {
       alert("We can only merge if vectors match.");
     }
@@ -898,13 +910,52 @@ function mergeAdd(oldPtLen) {
   polyList = polyList.concat(newPolyList);
 }
 
-function mergeDropDup(oldPtLen) {
+function mergeDropDup(oldPtLen,oldPolyLen) {
   let joinDist = minEdgeLen()/4;
+  let vectDenom = Ax*By-Ay*Bx;
   for (let i = 0;i<oldPtLen;i++) {
     for (let j = oldPtLen;j<pointList.length;j++) {
+      let xDiff = pointList[i][0]-pointList[j][0];
+      let yDiff = pointList[i][1]-pointList[j][1];
+      let Acoord = (xDiff*By-yDiff*Bx)/vectDenom;
+      let Bcoord = (Ax*yDiff-Ay*xDiff)/vectDenom;
+      let roundA = Math.round(Acoord);
+      let roundB = Math.round(Bcoord);
+      let absXDiff = Math.abs(xDiff - roundA*Ax-roundB*Bx);
+      let absYDiff = Math.abs(yDiff - roundA*Ay-roundB*By); 
+//alert([i,j,absXDiff+absYDiff,joinDist]);
+      if (absXDiff+absYDiff<joinDist) {
+//alert(JSON.stringify([pointList[i],pointList[j],roundA,roundB]));
+        for (let k = oldPolyLen;k<polyList.length;k++) {
+          polyList[k].forEach(function(nextPt) {
+            if (nextPt[0] === j) {
+              nextPt[0] = i;
+              nextPt[1][0] = nextPt[1][0]-roundA;
+              nextPt[1][1] = nextPt[1][1]-roundB;
+            } // end if 
+          }); // end polyList loop
+        } // end k loop
+      } // end if
+    } // end j loop
+  } // end i loop
+  dropUnused();
+ // alert(JSON.stringify([pointList,polyList]));
+}
 
-    }
-  }
+
+
+function newCoords2(point,vect1,vect2) {
+// return point in (vect1,vect2) coord. system
+  let denom = vect1[0]*vect2[1]-vect1[1]*vect2[0];
+  let newX = point[0]*vect2[1]-point[1]*vect2[0];
+  let newY = vect1[0]*point[1]-vect1[1]*point[0];
+  return([newX/denom,newY/denom]);
+
+
+      let i2 = Math.round(newPt2[0]);
+      let j2 = Math.round(newPt2[1]);
+      newPt2[0] = pointList[pt][0]-i2*Ax-j2*Bx;
+      newPt2[1] = pointList[pt][1]-i2*Ay-j2*By;
 }
 
 function mergeFindPt(point) {
