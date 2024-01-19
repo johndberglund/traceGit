@@ -24,6 +24,12 @@ var Ay = 0;
 var Bx = 0;
 var By = 300;
 var mode = 0;
+var newPointList = [];
+var newPolyList = [];
+var newAx = 0;
+var newAy = 0;
+var newBx = 0;
+var newBy = 0;
 
 function init() {
   sized=1;
@@ -45,6 +51,7 @@ function init() {
   d.style.height = window.innerHeight-110 + "px";
   d.style.maxWidth= window.innerWidth-170 + "px";
 //do2024();
+//do192();
   draw();
 }
 
@@ -63,7 +70,28 @@ function resize() {
   draw(); }
 }
 
+function do192() {
+  Ax = 20000;
+  By = 20000;
+  addPoly(192,0,0,30.555*5,0.01636246,-1);
+  addPoly(112,0,50.8994*5,18.61233*5,0.0280499,-1);
+  addPoly(112,35.9913*5,35.9913*5,18.61233*5,0.0280499,-1);
+} // end do192
+
+function addPoly(numSides,centX,centY,radius,startAngle,lock) {
+  let newPoly = [];
+  for (let i = 0; i<numSides;i++) {
+    let newAngle = i/numSides*2*Math.PI+startAngle;
+    let newX = (Math.cos(newAngle)*radius)+centX;
+    let newY = (Math.sin(newAngle)*radius)+centY;
+    newPoly.push([pointList.length,[0,0]]);
+    pointList.push([newX,newY,lock]); // -1 locked, 1 unlocked
+  }
+  polyList.push(newPoly);
+}
+
 function do2024() {
+alert(90);
 let xMult = 2;
 let yMult = 2;
 let yAdder = -220;
@@ -107,7 +135,7 @@ xOffset = -10;
   }
   polyList.push(newPoly);
 
-}
+} // end do2024
 
 
 function getMode() {
@@ -180,7 +208,6 @@ function goMove() {
   mode = 4;
 }
 
-
 function goReg() {
   makeRegular();
   draw();
@@ -215,9 +242,9 @@ function avePts(ptList) {
   return [xSum, ySum];
 }
 
+function avePolar(polyRawPolar,centPt) {
 // input polygon and center, average the polar coordinates to find best fit regular polygon, 
 // output vote where to move pointList, (have the polygon given clockwise.)
-function avePolar(polyRawPolar,centPt) {
   var rNew = 0;
   var tBase = 0;
   var vertNum = 0;
@@ -272,6 +299,8 @@ function avePolar(polyRawPolar,centPt) {
 } // end avePolar
 
 function avePolar2(polyRawPolar,centPt, bestLen) {
+// input polygon, center and best edge length, average the polar coordinates to find best fit regular polygon, 
+// output vote where to move pointList, (have the polygons given clockwise.)
 //  var rNew = 0;
   var tBase = 0;
   var vertNum = 0;
@@ -363,8 +392,8 @@ function polyAddRaw(poly) {
   return polyRaw;
 }
 
-// this will try to make the polygons regular
 function makeRegular() {
+// this will try to make the polygons regular
   var PtVoteList = [];
   polyList.forEach(function(poly) {
     var polyRaw = polyAddRaw(poly);
@@ -396,19 +425,9 @@ function makeRegular() {
   }
 } // end makeRegular
 
-// functions used in makeRegular2()...
-// avEdgeLen() 
-// polyAddRaw(poly) 
-// polyRaw2Cent(polyRaw) 
-// addPolar(polyRaw, centPt) 
-// avePolar2(polyRawPolar,centPt,bestLen) 
-// avePts(votesByPt)
-// mapPt(pointList[lastPtMap[0]],lastPtMap[1]) 
-// rect2Polar([vecX, vecY]) 
-// invMapPt([newX,newY], ptMapRawPolar[1]);
 
-// this will try to make the polygons regular. It aims at all edges the same length.
 function makeRegular2() {
+// this will try to make the polygons regular. It aims at all edges the same length.
   var bestLen = avEdgeLen();
   var PtVoteList = [];
   polyList.forEach(function(poly) {
@@ -442,8 +461,8 @@ function makeRegular2() {
   }
 } // end makeRegular2
 
-// find average edge length
 function avEdgeLen() {
+// find average edge length
   var edgeLens = [];
   polyList.forEach(function(poly) {
     var lastPtMap = poly[poly.length-1];
@@ -459,22 +478,46 @@ function avEdgeLen() {
   return(edgeLens.reduce((A,B) => A+B, 0) / edgeLens.length);
 }
 
-// compose two mappings. First map1() then map2()
+function minEdgeLen() {
+// find minimum edge length
+  let minLen = Ax+Ay+Bx+By;
+  polyList.forEach(function(poly) {
+    var lastPtMap = poly[poly.length-1];
+    var lastRawPt = mapPt(pointList[lastPtMap[0]],lastPtMap[1]);
+    poly.forEach(function(ptMap) {
+      var rawPt = mapPt(pointList[ptMap[0]],ptMap[1]);
+      var length = Math.sqrt((lastRawPt[0]-rawPt[0])**2+(lastRawPt[1]-rawPt[1])**2);
+      if (length < minLen) {minLen = length}
+      lastPtMap = ptMap;
+      lastRawPt = rawPt;
+    });   
+  });
+  return(minLen);
+}
+
 function composeMaps(map1, map2) {
+// compose two mappings. First map1() then map2()
   return([map1[0]+map2[0],map1[1]+map2[1]]);
 }
 
-// returns the inverse of a mapping.
 function invMap(map) {
+// returns the inverse of a mapping.
   return([-map[0],-map[1]]);
 }
 
+function dragMergePts() {
 // merges two points when you drag one atop the other.
-function mergePts() {
-  let oldPt = ptMap1[0];
-  let oldMap = ptMap1[1];
-  let newPt = ptMap2[0];
-  let newMap = ptMap2[1];
+  mergePts(ptMap1,ptMap2);
+  ptMap2 = -1;
+  dropUnused();
+}
+
+function mergePts(keepPtMap, mergePtMap) {
+// this replaces mergePtMap with keepPtMap in polyList. Doesn't drop unused.
+  let oldPt = keepPtMap[0];
+  let oldMap = keepPtMap[1];
+  let newPt = mergePtMap[0];
+  let newMap = mergePtMap[1];
   let jointMap = composeMaps(invMap(oldMap),newMap);
   polyList.forEach(function(myPoly) {
     myPoly.forEach(function(myPtMap) {
@@ -484,10 +527,7 @@ function mergePts() {
       }
     });
   });
-  ptMap2 = -1;
-  dropUnused();
 }
-
 
 function txtToFile(content, filename, contentType) {
   const a = document.createElement('a');
@@ -547,8 +587,8 @@ function goSvg() {
   svgToFile(asOutput,thisFile,"svg");
 }
 
-// find point close to current point, or -1 if none.
 function findPoint(point) {
+// find point close to current point, or -1 if none.
   let newPt = newCoords(point,[Ax,Ay],[Bx,By]);
   let i = Math.round(newPt[0]);
   let j = Math.round(newPt[1]);
@@ -567,8 +607,8 @@ function findPoint(point) {
   return([-1]);
 }
 
-// find point close to current point, or -1 if none. BUT exclude point ptMap1
 function findNewPoint(point) {
+// find point close to current point, or -1 if none. BUT exclude point ptMap1
   let newPt = newCoords(point,[Ax,Ay],[Bx,By]);
   let i = Math.round(newPt[0]);
   let j = Math.round(newPt[1]);
@@ -589,9 +629,8 @@ function findNewPoint(point) {
   return([-1]);
 }
 
-
-// return point in (vect1,vect2) coord. system
 function newCoords(point,vect1,vect2) {
+// return point in (vect1,vect2) coord. system
   let denom = vect1[0]*vect2[1]-vect1[1]*vect2[0];
   let newX = point[0]*vect2[1]-point[1]*vect2[0];
   let newY = vect1[0]*point[1]-vect1[1]*point[0];
@@ -604,10 +643,22 @@ function mouseMoved(event) {
   var canvasX = Math.round(event.clientX - cRect.left);  
   var canvasY = Math.round(event.clientY - cRect.top);
   posi = [canvasX/sized+xOffset,canvasY/sized+yOffset,1];
+  let pointName = JSON.stringify(findPoint(posi));
+  if (pointName === "[-1]") {
+    document.getElementById("coords").value ="("+canvasX/sized+xOffset+"," + canvasY/sized+yOffset+")";
+  } else {
+    let nowPtMap = JSON.parse(pointName);
+    let nowPtX = Math.round(pointList[nowPtMap[0]][0]*100)/100;
+    let nowPtY = Math.round(pointList[nowPtMap[0]][1]*100)/100;
+    document.getElementById("coords").value=JSON.stringify(pointName)+" raw:"+nowPtX+","+nowPtY;
+  }
 
 //move points
   if (posi1 != 0 && mode===4) {
     ptMap2 = findNewPoint(posi);
+//document.getElementById("coords").value = JSON.stringify(ptMap2);
+
+
     pointList[ptMap1[0]]=[oldPoint[0]-posi1[0]+posi[0],
                           oldPoint[1]-posi1[1]+posi[1],1];
     draw();
@@ -672,7 +723,7 @@ function mousePressed(event) {
 
 function mouseReleased(event) {
   if (ptMap2 != -1) {
-    mergePts();
+    dragMergePts();
   }
   if (posi1 != 0 && mode===4) {
     posi1 = 0;
@@ -763,7 +814,6 @@ function bombPoint(ptMap) {
 }
 
 function loadMyTiling() {
-
   var c = document.getElementById("myCanvas");
   var context = c.getContext("2d");
 
@@ -780,8 +830,8 @@ function loadMyTiling() {
       if (lines[i] === "poly:") { setPoly = 2; curPoly = []; continue;}
       if (lines[i] === "end") { draw(); break;}
       var coords = lines[i].split(",");
-      if (i===1) {Ax = coords[0],Ay=coords[1]}
-      if (i===2) {Bx = coords[0],By=coords[1]}
+      if (i===1) {Ax = parseFloat(coords[0]);Ay=parseFloat(coords[1])}
+      if (i===2) {Bx = parseFloat(coords[0]);By=parseFloat(coords[1])}
 
       if (setPoly === 1) {
         if (coords.length === 2) {
@@ -803,6 +853,134 @@ function loadMyTiling() {
   }
 } // end loadMyTiling()
 
+function mergeMyTiling() {
+  var c = document.getElementById("myCanvas");
+  var context = c.getContext("2d");
+
+  const file = document.getElementById("mergeTiling").files[0];
+  const reader = new FileReader();
+
+  reader.addEventListener("load", function () {
+    var lines = reader.result.split(/\r\n|\n/);
+ //   init();
+    var curLen = lines.length-1;
+    var setPoly = 0;
+    for (i = 1;i<curLen;i++) {
+      if (lines[i] === "points:") { setPoly = 1; continue;}
+      if (lines[i] === "poly:") { setPoly = 2; curPoly = []; continue;}
+      if (lines[i] === "end") { draw(); break;}
+      var coords = lines[i].split(",");
+      if (i===1) {newAx = parseFloat(coords[0]);newAy=parseFloat(coords[1])}
+      if (i===2) {newBx = parseFloat(coords[0]);newBy=parseFloat(coords[1])}
+
+      if (setPoly === 1) {
+        if (coords.length === 2) {
+          newPointList.push([parseFloat(coords[0]),parseFloat(coords[1]),1]);
+        }  else {
+          newPointList.push([parseFloat(coords[0]),parseFloat(coords[1]),parseFloat(coords[2])]);
+        } 
+      }
+      if (setPoly === 2) {
+        curPoly.push( [parseInt(coords[0]),[parseInt(coords[1]),parseInt(coords[2])]] );
+        if (lines[i+1] === "poly:") {newPolyList.push(curPoly);curPoly = [];};
+        if (lines[i+1] === "end") {newPolyList.push(curPoly);curPoly = [];};
+      }
+    }
+    if (newAx === Ax && newAy === Ay && newBx === Bx && newBy === By) {
+      let oldPtLen = pointList.length;
+      let oldPolyLen = polyList.length;
+      mergeAdd(oldPtLen);
+      mergeDropDup(oldPtLen,oldPolyLen);
+      draw();
+    } else {
+      alert("We can only merge if vectors match.");
+    }
+  },false);
+
+  if (file) {
+    reader.readAsText(file);
+  }
+} // end mergeMyTiling()
+
+function mergeAdd(oldPtLen) {
+  pointList = pointList.concat(newPointList);
+  newPolyList.forEach(function(myNewPoly) {
+    myNewPoly.forEach(function(myPoint) {
+      myPoint[0] += oldPtLen;
+    });
+  });
+  polyList = polyList.concat(newPolyList);
+}
+
+function mergeDropDup(oldPtLen,oldPolyLen) {
+  let joinDist = minEdgeLen()/4;
+  let vectDenom = Ax*By-Ay*Bx;
+  for (let i = 0;i<oldPtLen;i++) {
+    for (let j = oldPtLen;j<pointList.length;j++) {
+      let xDiff = pointList[i][0]-pointList[j][0];
+      let yDiff = pointList[i][1]-pointList[j][1];
+      let Acoord = (xDiff*By-yDiff*Bx)/vectDenom;
+      let Bcoord = (Ax*yDiff-Ay*xDiff)/vectDenom;
+      let roundA = Math.round(Acoord);
+      let roundB = Math.round(Bcoord);
+      let absXDiff = Math.abs(xDiff - roundA*Ax-roundB*Bx);
+      let absYDiff = Math.abs(yDiff - roundA*Ay-roundB*By); 
+//alert([i,j,absXDiff+absYDiff,joinDist]);
+      if (absXDiff+absYDiff<joinDist) {
+//alert(JSON.stringify([pointList[i],pointList[j],roundA,roundB]));
+        for (let k = oldPolyLen;k<polyList.length;k++) {
+          polyList[k].forEach(function(nextPt) {
+            if (nextPt[0] === j) {
+              nextPt[0] = i;
+              nextPt[1][0] = nextPt[1][0]-roundA;
+              nextPt[1][1] = nextPt[1][1]-roundB;
+            } // end if 
+          }); // end polyList loop
+        } // end k loop
+      } // end if
+    } // end j loop
+  } // end i loop
+  dropUnused();
+ // alert(JSON.stringify([pointList,polyList]));
+}
+
+
+
+function newCoords2(point,vect1,vect2) {
+// return point in (vect1,vect2) coord. system
+  let denom = vect1[0]*vect2[1]-vect1[1]*vect2[0];
+  let newX = point[0]*vect2[1]-point[1]*vect2[0];
+  let newY = vect1[0]*point[1]-vect1[1]*point[0];
+  return([newX/denom,newY/denom]);
+
+
+      let i2 = Math.round(newPt2[0]);
+      let j2 = Math.round(newPt2[1]);
+      newPt2[0] = pointList[pt][0]-i2*Ax-j2*Bx;
+      newPt2[1] = pointList[pt][1]-i2*Ay-j2*By;
+}
+
+function mergeFindPt(point) {
+// find point close to current point, or -1 if none. BUT exclude point ptMap1
+  let newPt = newCoords(point,[Ax,Ay],[Bx,By]);
+//  let i = Math.round(newPt[0]);
+//  let j = Math.round(newPt[1]);
+//  newPt[0] = point[0]-i*Ax-j*Bx;
+//  newPt[1] = point[1]-i*Ay-j*By;
+  for (pt = 0;pt<pointList.length;pt++) {
+    if (pt != ptMap1[0]) {
+      let newPt2 = newCoords(pointList[pt],[Ax,Ay],[Bx,By]);
+//      let i2 = Math.round(newPt2[0]);
+//      let j2 = Math.round(newPt2[1]);
+//      newPt2[0] = pointList[pt][0]-i2*Ax-j2*Bx;
+//      newPt2[1] = pointList[pt][1]-i2*Ay-j2*By;
+      if (Math.abs(newPt[0]-newPt2[0])<=boxSize/sized 
+        && Math.abs(newPt[1]-newPt2[1])<=boxSize/sized)
+      {return [pt,[i-i2,j-j2]];}
+    }
+  }
+  return([-1]);
+}
 
 function loadMyImage() {
   init();
@@ -831,8 +1009,8 @@ function loadMyImage() {
   }
 }
 
-// drop unused points
 function dropUnused() {
+// drop unused points
   let usedPts = [];
   for (let i = 0; i<pointList.length; i++) {
     usedPts.push(-1);
@@ -858,7 +1036,6 @@ function dropUnused() {
   draw();
 }
 
-
 function draw() {
   var c = document.getElementById("myCanvas");
   var context = c.getContext("2d");
@@ -880,7 +1057,6 @@ context.scale(sized,sized);
       context.drawImage(img, 50, 50);
 context.scale(1/sized,1/sized);
   }
-
 
 // draw vectors
   context.lineWidth = 2;
@@ -920,7 +1096,6 @@ context.scale(1/sized,1/sized);
     }
   });
 
-
 // blue outline if a moved point overlaps another
   if (ptMap2 != -1) { // we overlap a point
     var otherPt = pointList[ptMap2[0]];
@@ -934,7 +1109,6 @@ context.scale(1/sized,1/sized);
     context.stroke();
     context.closePath();
   }
-
 
 // draw polygons
   context.lineWidth = 1;
