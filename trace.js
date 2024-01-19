@@ -644,11 +644,13 @@ function mouseMoved(event) {
   var canvasY = Math.round(event.clientY - cRect.top);
   posi = [canvasX/sized+xOffset,canvasY/sized+yOffset,1];
   let pointName = JSON.stringify(findPoint(posi));
-
-  if (pointName === "[-1]") {document.getElementById("coords").value="("+canvasX+","+canvasY+")"
-;
+  if (pointName === "[-1]") {
+    document.getElementById("coords").value ="("+canvasX/sized+xOffset+"," + canvasY/sized+yOffset+")";
   } else {
-    document.getElementById("coords").value="point: "+pointName;
+    let nowPtMap = JSON.parse(pointName);
+    let nowPtX = Math.round(pointList[nowPtMap[0]][0]*100)/100;
+    let nowPtY = Math.round(pointList[nowPtMap[0]][1]*100)/100;
+    document.getElementById("coords").value=JSON.stringify(pointName)+" raw:"+nowPtX+","+nowPtY;
   }
 
 //move points
