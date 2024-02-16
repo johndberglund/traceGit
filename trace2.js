@@ -53,9 +53,9 @@ function init() {
 //do2024();
 //do192();
 //  doOcts();
+fill2024();
   draw();
 }
-
 
 function resize() {
   var d = document.getElementById("canvasDiv");
@@ -74,23 +74,41 @@ function resize() {
 function doOcts() {
   Ax = 20000;
   By = 20000;
-  let myOct = 735.72/61;
+  let nFlat = 26;
+  let nTilt = 19;
+  let sqDiam = 751.1;
+  let bigSq = nFlat+2*nTilt-2;
+  let myOct = sqDiam/bigSq;
   let octEdge = myOct/(1+Math.sqrt(2));
   let oct1 = octEdge/Math.sqrt(2);
   let oct2 = oct1 + octEdge;
-  let octBase = 30.5*myOct;
+  let octBase = bigSq/2*myOct;
   let octRad = Math.sqrt(octEdge*octEdge/4+myOct*myOct/4);
   let octAngle = Math.PI/8;
-  for (let i = 0; i<17;i++) {
+  for (let i = 0; i<nTilt;i++) {
     let cornerX = -octBase + i*myOct;
-    for (let j = 0;j<17-i;j++) {
+    for (let j = 0;j<nTilt-i;j++) {
       let cornerY = octBase - j*myOct;
       addRegPoly(4,cornerX,cornerY,oct1,0,-1);
       addRegPoly(8,cornerX+myOct/2,cornerY-myOct/2,octRad,octAngle,-1);
     } // end j loop
   } // end i loop
+  for (let i = 1; i<nTilt;i++) {
+    let j = nTilt-i-1;
+    let cornerX = -octBase + i*myOct;
+    let cornerY = octBase - j*myOct;
+    addRegPoly(4,cornerX,cornerY-myOct,oct1,0,-1);
+    let point1 = [cornerX,cornerY-myOct-oct1,-1];
+    let point2 = [cornerX,cornerY-myOct-oct2,-1];
+    let point3 = [cornerX+0.5*oct2,cornerY-myOct-0.5*oct2,-1];
+    let point4 = [cornerX+oct2,cornerY-myOct,-1];
+    let point5 = [cornerX+oct1,cornerY-myOct,-1];
+    addPoly([point3,point5,point1]);
+    addPoly([point3,point4,point5]);
+    addPoly([point3,point1,point2]);
+  }
   cornerY = octBase;
-  for (let i = 17; i<29+17;i++) {
+  for (let i = nTilt; i<nFlat+nTilt-2;i++) {
     let cornerX = -octBase + i*myOct;
     addRegPoly(4,cornerX,cornerY,oct1,0,-1);
     addRegPoly(8,cornerX+myOct/2,cornerY-myOct/2,octRad,octAngle,-1);
@@ -125,6 +143,180 @@ function addRegPoly(numSides,centX,centY,radius,startAngle,lock) {
     pointList.push([newX,newY,lock]); // -1 locked, 1 unlocked
   }
   polyList.push(newPoly);
+}
+
+function fill2024() {
+  Ax = 20000;
+  By = 20000;
+  let blah = [];
+  let edgeLen = 2;
+//  let yAdder = -220;
+//sized = 12;
+//yOffset = 180;
+//xOffset = -10;
+
+//polygons are centered on y axis. 
+  let bigRad = 644.26;
+  let lilRad = 398.72;
+  let bigCentY = -440;
+  let gap = 3.48;
+  let bigBotY = bigCentY-bigRad;
+  let bigTopY = bigCentY+bigRad;
+  let lilBotY = bigTopY + gap;
+  let lilTopY = lilBotY + 2*lilRad;
+//alert([bigBotY,bigTopY,lilBotY,lilTopY]);
+
+  let CB = (lilRad*gap+2*lilRad*bigRad)/(bigRad-lilRad);
+  let CBprime = CB + gap;
+  let inv1Rad = Math.sqrt(CB*CBprime); // r
+  let inv1CentY = lilBotY+CB; // C
+  let inv2CentY = inv1CentY - inv1Rad; // K
+//alert([CB,CBprime,inv1Rad,inv1CentY,inv2CentY]);
+  
+  let inv2Rad = 20;
+  let bigBot2Y = inv2Rad*inv2Rad/(bigBotY-inv2CentY) +inv2CentY;
+  let bigTop2Y = inv2Rad*inv2Rad/(bigTopY-inv2CentY) +inv2CentY;
+  let lilBot2Y = inv2Rad*inv2Rad/(lilBotY-inv2CentY) +inv2CentY;
+  let lilTop2Y = inv2Rad*inv2Rad/(lilTopY-inv2CentY) +inv2CentY;
+  let midLineY = (lilTop2Y+bigBot2Y)/2; // L
+  let lilCent2Y = (lilTop2Y+lilBot2Y)/2; // K(M) center
+  let bigCent2Y = (bigTop2Y+bigBot2Y)/2; // K(N) center
+//alert([lilCent2Y, bigCent2Y]);
+
+// need from above: inv2CentY, inv2Rad, bigCent2Y, midLineY, edgeLen 
+//let i = 477.5;
+  for (let i = 477.5; i>384;i--) {
+
+//  for (let i = 477.5; i>475;i--) {
+    let newPtList = findNewPts(i, inv2CentY, inv2Rad, bigCent2Y, midLineY, edgeLen);
+    blah.push(newPtList);
+  }
+  for (let i = 0;i<blah.length-1;i++) {
+   // usually stays 1. If 0, big increases. if 2, lil increases.
+    blah[i][19]=blah[i+1][17]-blah[i][17]; // 19 grow
+//   if (blah[i][19]===0) {blah[i-1][20]=1} // 20 Big (unused)
+//    if (blah[i][19]===2) {blah[i-1][21]=1} // 21 Lil (unused)
+  }
+  let myMult = (Math.sqrt(5)+1)/2-1;
+  let multiplier = 1;
+  let gridArray = [];
+  for (let i = 0;i<blah.length-1;i++) {
+//    if (blah[i][20]+blah[i][21]>0) {
+
+    blah[i].push(blah[i][7]-blah[i][8]); // 24 arcAngTot
+    blah[i].push(blah[i][24]/blah[i][11]); // 25 angPerRow
+    if (blah[i][14]===1.5) {blah[i].push(-0.5)}
+      else {blah[i].push(0.5)} // 26 startGridCoord
+    blah[i].push(-blah[i][26]*blah[i][25]); // 27 startAdd
+    blah[i].push(blah[i][27]+blah[i][7]); // 28 gridStart
+    if (blah[i][18]===1.5) {blah[i].push(-0.5*blah[i][25])}
+      else {blah[i].push(0.5*blah[i][25])} // 29 endAdd
+    blah[i].push(blah[i][29]+blah[i][8]); // 30 gridEnd
+    blah[i].push(blah[i][30]-blah[i][28]); // 31 gridAngTot
+    blah[i].push((blah[i][18]+blah[i][14]-2+blah[i][11])/2); // 32 gridRows
+    blah[i].push(blah[i][31]/blah[i][32]); // 33 angPerGrid
+    blah[i].push((blah[i][17]-blah[i][16])/blah[i][32]); // 34 fixRadPerGrid
+  
+    if (blah[i][19] != 1) {
+      blah[i][22]= multiplier*myMult-Math.floor(multiplier*myMult); //22 growDecimal
+      blah[i][23]=Math.floor((blah[i][32]-1)*blah[i][22])+1; //23 7gon place
+      multiplier++;
+    }
+
+    for (let j = 0; j<= blah[i][32]; j++) {
+      let nextGrid = [];
+      nextGrid.push(blah[i][13]);
+      nextGrid.push(blah[i][26]+2*j);
+//alert(blah[i][28]+j*blah[i][33]);
+      nextGrid.push(Math.cos(blah[i][28]+j*blah[i][33])*(blah[i][6]+j*blah[i][34])+blah[i][4]);
+      nextGrid.push(Math.sin(blah[i][28]+j*blah[i][33])*(blah[i][6]+j*blah[i][34])+blah[i][5]);
+//alert(nextGrid);
+      gridArray.push(nextGrid);
+    }
+//alert(blah[i]);
+  }
+//alert(gridArray);
+  gridArray.forEach(function(nextGrid) {
+    pointList.push([nextGrid[2],nextGrid[3],-1]);
+  });
+
+//  goSaveFill(gridArray);
+goSaveFill(blah);
+
+}
+
+function findNewPts(i, inv2CentY, inv2Rad, bigCent2Y, midLineY, edgeLen) {
+
+  let yAdder = -220;
+  let newAngle = i/2024*2*Math.PI;
+  let bigPtX = (Math.cos(newAngle)*322.13)*edgeLen; //0
+  let bigPtY = (Math.sin(newAngle)*322.13+yAdder)*edgeLen; //1
+
+  let bigPtDist = Math.sqrt((bigPtY-inv2CentY)**2 + bigPtX*bigPtX); // dist
+  let bigPtDist2 = inv2Rad*inv2Rad/bigPtDist; // newDist
+  let bigPt2X = bigPtX/bigPtDist*bigPtDist2; // K(x)
+  let bigPt2Y = (bigPtY-inv2CentY)/bigPtDist*bigPtDist2+inv2CentY; // K(y)
+  let arcCent2X = bigPt2X+(bigPt2Y-bigCent2Y)/bigPt2X*(bigPt2Y-midLineY); // CentX
+//  let arcCent2Y = midLineY; // CentY
+
+  let lilPt2X = bigPt2X; // K(x')
+  let lilPt2Y = 2*midLineY-bigPt2Y; // K(y')
+  let lilPtDist2 = Math.sqrt((lilPt2Y-inv2CentY)**2 + lilPt2X * lilPt2X); // dist
+  let lilPtDist = inv2Rad*inv2Rad/lilPtDist2; // newDist
+  let lilPtX = lilPt2X/lilPtDist2*lilPtDist; // new x //2
+  let lilPtY = (lilPt2Y-inv2CentY)/lilPtDist2*lilPtDist+inv2CentY; // new y //3
+//alert([lilPtX, lilPtY]);
+
+  let altPt2X = arcCent2X+Math.sqrt((bigPt2Y-midLineY)**2 + (bigPt2X-arcCent2X)**2); // Px
+  let altPt2Y = midLineY; // Py
+  let altPtDist2 = Math.sqrt((altPt2Y-inv2CentY)**2 + altPt2X*altPt2X); // dist
+  let altPtDist = inv2Rad*inv2Rad/altPtDist2; // newDist
+  let altPtX = altPt2X/altPtDist2*altPtDist; // new x
+  let altPtY = (altPt2Y-inv2CentY)/altPtDist2*altPtDist+inv2CentY; // new y
+
+  let arcCentPt = findCirCent(bigPtX,bigPtY,lilPtX,lilPtY,altPtX,altPtY); // 4 & 5
+//alert([bigPtX, bigPtY, altPtX, altPtY, lilPtX, lilPtY, arcCentPt[0],arcCentPt[1]]);
+  let arcRad = Math.sqrt( (arcCentPt[0]-bigPtX)**2 + (arcCentPt[1]-bigPtY)**2 ); //6
+  let arcAng1 = Math.atan2(bigPtY-arcCentPt[1],bigPtX-arcCentPt[0]); //7
+  let arcAng2 = Math.atan2(lilPtY-arcCentPt[1],lilPtX-arcCentPt[0]); //8
+  let arcDist = (arcAng2-arcAng1)*arcRad; //9
+  let arcNumRows = arcDist/Math.sqrt(3)/edgeLen; //10
+  let arcRoundRows = Math.round(arcNumRows); //11
+  let arcRowParity = arcRoundRows%2; // 12
+  let bigIndex = 479-i; //13
+  let bigParity = bigIndex%2; //14
+  let bothParity = (bigParity+arcRowParity)%2; //15
+  let lilIndex = 285.1773744650518-Math.acos(lilPtX/2/199.36)/2/Math.PI*1248; //16
+  let pickLilIndex = Math.round((lilIndex+1-bothParity)/2)*2-1+bothParity; //17
+  let lilParity = pickLilIndex%2; //18
+
+//alert([arcRowParity,iParity,bothParity,lilIndex,pickLilIndex]);
+
+//  return([bigPtX,bigPtY,lilPtX,lilPtY,altPtX,altPtY,arcCentPt[0],arcCentPt[1]]);
+  return([bigPtX,bigPtY,lilPtX,lilPtY,arcCentPt[0],arcCentPt[1],arcRad,arcAng1,arcAng2,arcDist,arcNumRows,      arcRoundRows,arcRowParity,bigIndex,bigParity,bothParity,lilIndex,pickLilIndex,lilParity,1,0,0,0,0]);
+} // end findNewPts()
+
+
+function goSaveFill(blah) {
+  asOutput = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34\r\n";
+  asOutput = asOutput.concat("bigPtX, bigPtY, lilPtX, lilPtY, arcCentX, arcCentY, arcRad, arcAng1, arcAng2, arcDist, arcNumRows, arcRoundRows, arcRowParity, bigIndex, bigParity, bothParity, lilIndex, pickLilIndex, lilParity, grow, Big, Lil, growDecimal, 7gonPlace, arcAngTot, angPerRow, startGridCoord, startAdd, gridStart, endAdd, gridEnd, gridAngTot, gridRows, angPerGrid, fixRadPerGrid\r\n");
+  blah.forEach(function(ptListing) {
+      asOutput = asOutput.concat(JSON.stringify(ptListing)+"\r\n");
+  });
+
+  let thisFile = "filling";
+  txtToFile(asOutput,thisFile,"txt");
+}
+
+
+
+
+function findCirCent(ax,ay,bx,by,cx,cy) {
+// find circle center from three points on circle
+  let thisX = ((by-cy)*(ax*ax-bx*bx)/(ay-by)/2+(cy*cy-by*by)/2+(cx*cx-bx*bx)/2+(by-cy)*(ay+by)/2)/
+          ((cx-bx)+(cy-by)*(bx-ax)/(ay-by));
+  let thisY = (thisX - (ax+bx)/2)*(bx-ax)/(ay-by)+(ay+by)/2;
+  return([thisX,thisY]);
 }
 
 function do2024() {
@@ -206,6 +398,53 @@ function reflY() {
   draw();
 }
 
+function isEven(num) {
+  let isEven = (num/2 === Math.floor(num/2));
+  return(isEven);
+}
+
+function makeOctLine() {
+  let octRad = parseFloat(prompt("What is the distance: center to midpoint?"));
+  let numSeg = parseFloat(prompt("How many segments?"));
+  let numLayer = parseInt(prompt("How many layers?"));
+  let halfEdge = octRad * Math.tan(22.5*Math.PI/180);
+  let segSize = 2*halfEdge/numSeg;
+  let triSize = segSize*.8;
+  for (let i = 0;i <= numSeg;i++) {
+    pointList.push([-halfEdge+i*segSize, octRad, -1]);
+  } // end i loop
+
+  for (let i = 0;i < numSeg;i++) {
+    for (let j = 0;j<numLayer;j++) {
+      let baseX = -halfEdge+i*segSize;
+      let baseY = octRad + j*2*triSize;
+      if (isEven(i+j)) {
+        let newPoly = [];
+        newPoly.push([baseX,baseY,1]);
+        newPoly.push([baseX+segSize,baseY,1]);
+        newPoly.push([baseX+1.5*segSize,baseY+triSize,1]);
+        newPoly.push([baseX+segSize,baseY+2*triSize,1]);
+        newPoly.push([baseX,baseY+2*triSize,1]);
+        newPoly.push([baseX-0.5*segSize,baseY+triSize,1]);
+        addPoly(newPoly);
+      } else {
+        let newPoly = [];
+        newPoly.push([baseX,baseY,1]);
+        newPoly.push([baseX+segSize,baseY,1]);
+        newPoly.push([baseX+0.5*segSize,baseY+triSize,1]);
+        addPoly(newPoly);
+        newPoly= [];
+        newPoly.push([baseX+0.5*segSize,baseY+triSize,1]);
+        newPoly.push([baseX+segSize,baseY+2*triSize,1]);
+        newPoly.push([baseX,baseY+2*triSize,1]);
+        addPoly(newPoly);
+      }     
+    }
+  }
+  dropDup();
+  draw();
+}
+
 
 function getMode() {
 var getMode = document.querySelector('input[name="mode"]:checked');   
@@ -275,6 +514,22 @@ function goExplode() {
 
 function goMove() {
   mode = 4;
+}
+
+function goHex() {
+  mode = 5;
+}
+
+function goLeft7() {
+  mode = 6;
+}
+
+function goRight7() {
+  mode = 7;
+}
+
+function goSel() {
+  mode = 8;
 }
 
 function goReg() {
@@ -733,16 +988,16 @@ function mouseMoved(event) {
     draw();
   }
 //move vectors
-  if (posi1 != 0 && mode>4) {
-    if (mode ===5) {
+  if (posi1 != 0 && mode>10) {
+    if (mode ===11) {
       baseX = oldPoint[0]-posi1[0]+posi[0];
       baseY = oldPoint[1]-posi1[1]+posi[1];
     }
-    if (mode ===6) {
+    if (mode ===12) {
       Ax = oldPoint[0]-posi1[0]+posi[0]-baseX;
       Ay = oldPoint[1]-posi1[1]+posi[1]-baseY;
     }
-    if (mode ===7) {
+    if (mode ===13) {
       Bx = oldPoint[0]-posi1[0]+posi[0]-baseX;
       By = oldPoint[1]-posi1[1]+posi[1]-baseY;
     }
@@ -797,7 +1052,7 @@ function mouseReleased(event) {
   if (posi1 != 0 && mode===4) {
     posi1 = 0;
   }
-  if (posi1 != 0 && mode>4) {
+  if (posi1 != 0 && mode>10) {
     mode=4;
     posi1 = 0;
   }
@@ -808,13 +1063,13 @@ function onVector() {
   var onVec = 4;
   if (Math.abs(posi1[0]-baseX)<=boxSize/sized 
          && Math.abs(posi1[1]-baseY)<=boxSize/sized )
-          {onVec = 5; oldPoint = posi1;};
+          {onVec = 11; oldPoint = posi1;};
   if (Math.abs(posi1[0]-baseX-Ax)<=boxSize/sized 
          && Math.abs(posi1[1]-baseY-Ay)<=boxSize/sized )
-          {onVec = 6;oldPoint = posi1;};
+          {onVec = 12;oldPoint = posi1;};
   if (Math.abs(posi1[0]-baseX-Bx)<=boxSize/sized 
          && Math.abs(posi1[1]-baseY-By)<=boxSize/sized )
-          {onVec = 7;oldPoint = posi1;};
+          {onVec = 13;oldPoint = posi1;};
   return(onVec);
 }
 
@@ -1014,7 +1269,7 @@ function mergeDropDup(oldPtLen,oldPolyLen) {
 }
 
 function dropDup() {
-  let joinDist = minEdgeLen()/4;
+  let joinDist = minEdgeLen()/3;
   let vectDenom = Ax*By-Ay*Bx;
   for (let i = 0;i<pointList.length-1;i++) {
     for (let j = i+1;j<pointList.length;j++) {
@@ -1113,6 +1368,7 @@ function dropUnused() {
   let usedPts = [];
   for (let i = 0; i<pointList.length; i++) {
     usedPts.push(-1);
+    if (pointList[i][2] === -1) {usedPts[i] = 1} // Don't drop locked points
   }
   polyList.forEach(function(myPoly) {
     myPoly.forEach(function(myPtMap) {

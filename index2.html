@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>TraceGit</title>
+<title>TraceGit2</title>
 <link rel="stylesheet" href="menu.css">
 
-<script src="trace.js"></script>
+<script src="trace2.js"></script>
 
 </head>
 
@@ -32,10 +32,18 @@
       <li><a onclick="rotOrig()">Rotate around origin</a>
       <li><a onclick="rot180()">Rotate 180º around some point</a>
       <li><a onclick="reflY()">Reflect over Y axis</a>
+      <li><a onclick="delSel()">Delete selection</a>
+      <li><a onclick="keepSel()">Keep ONLY selection.</a>
+      <li><a onclick="makeOctLine()">Big octagon 6363 surround.</a>
+      <li><a onclick="doOcts()">Big octagon frame.</a>
     </ul>
   </li>
-  <li><a href="#home">Help</a></li>
-
+  <li class="dropdown"><a>Help</a>
+    <ul>
+      <li><a>How to use this program... coming soon</a>
+      <li><a href="https://github.com/johndberglund/traceGit" target="_blank">Github Link</a>
+    </ul>
+  </li>
 
 </ul>
 </nav>
@@ -78,6 +86,34 @@
 </label>
 <br>
 <input type="radio" id="move" name="mode" value="move">
+</div>
+<div style="float:left">
+<label for="hex">
+<img src="hex.png" alt="Hex" onclick="goHex()" title="Draw Hex"></img>
+</label>
+<br>
+<input type="radio" id="hex" name="mode" value="hex">
+</div>
+<div style="float:left">
+<label for="left7">
+<img src="left7.png" alt="Left7" onclick="goLeft7()" title="Draw Left 7"></img>
+</label>
+<br>
+<input type="radio" id="left7" name="mode" value="left7">
+</div>
+<div style="float:left">
+<label for="right7">
+<img src="right7.png" alt="Hex" onclick="goRight7()" title="Draw Right7"></img>
+</label>
+<br>
+<input type="radio" id="right7" name="mode" value="right7">
+</div>
+<div>
+<label for="sel">
+<img src="sel.png" alt="Sel" onclick="goSel()" title="Select"></img>
+</label>
+<br>
+<input type="radio" id="sel" name="mode" value="sel">
 </div>
 <br>
 </form>
