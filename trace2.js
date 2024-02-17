@@ -50,7 +50,7 @@ function init() {
   d.style.maxHeight= window.innerHeight-110 + "px";
   d.style.height = window.innerHeight-110 + "px";
   d.style.maxWidth= window.innerWidth-170 + "px";
-//do2024();
+do2024();
 //do192();
 //  doOcts();
 fill2024();
@@ -204,7 +204,7 @@ function fill2024() {
 //    if (blah[i][20]+blah[i][21]>0) {
 
     blah[i].push(blah[i][7]-blah[i][8]); // 24 arcAngTot
-    blah[i].push(blah[i][24]/blah[i][11]); // 25 angPerRow
+    blah[i].push(blah[i][24]/blah[i][10]); // 25 angPerRow
     if (blah[i][14]===1.5) {blah[i].push(-0.5)}
       else {blah[i].push(0.5)} // 26 startGridCoord
     blah[i].push(-blah[i][26]*blah[i][25]); // 27 startAdd
@@ -227,14 +227,22 @@ function fill2024() {
       let nextGrid = [];
       nextGrid.push(blah[i][13]);
       nextGrid.push(blah[i][26]+2*j);
-//alert(blah[i][28]+j*blah[i][33]);
-      nextGrid.push(Math.cos(blah[i][28]+j*blah[i][33])*(blah[i][6]+j*blah[i][34])+blah[i][4]);
-      nextGrid.push(Math.sin(blah[i][28]+j*blah[i][33])*(blah[i][6]+j*blah[i][34])+blah[i][5]);
+      nextGrid.push(Math.cos(blah[i][28]+j*blah[i][33])*(blah[i][6]+j*edgeLen*blah[i][34])+blah[i][4]);
+      nextGrid.push(Math.sin(blah[i][28]+j*blah[i][33])*(blah[i][6]+j*edgeLen*blah[i][34])+blah[i][5]);
+      // Triangles offcenter. the *2 & +.3 are tweaks to adjust. Did I make an error in my calculations?
+      let hepta = 0;
+      if (blah[i][23] != 0) { 
+        if (blah[i][23]*2+blah[i][26] === nextGrid[1]) {
+          hepta = blah[i][19]-1; 
+        }
+      }
+      nextGrid.push(hepta);
+      
 //alert(nextGrid);
       gridArray.push(nextGrid);
-    }
+    } // end j loop
 //alert(blah[i]);
-  }
+  } // end i loop
 //alert(gridArray);
   gridArray.forEach(function(nextGrid) {
     pointList.push([nextGrid[2],nextGrid[3],-1]);
