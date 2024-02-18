@@ -145,6 +145,100 @@ function addRegPoly(numSides,centX,centY,radius,startAngle,lock) {
   polyList.push(newPoly);
 }
 
+function makeDiamond(gridList) {
+  let diamondList = [];
+  let grandma = gridList[0];
+  let previous = gridList[1];
+  let minGrid = previous[0][1];
+  let maxGrid = previous[previous.length-1][1]
+  if (grandma[0][1]<minGrid) {
+    grandma = grandma.slice(1,1000);
+  }
+  if (grandma[grandma.length-1][1]>maxGrid) {
+    grandma.pop();
+  }
+//  for (let curNum = 2; curNum< gridList.length; curNum++) {
+for (let curNum = 2; curNum< 4; curNum++) {
+    let gridCount = 0;
+    for (let g = 0; g < gridList[curNum].length; g++) {
+      if (gridList[curNum][g][1] < minGrid) {
+        gridCount = 1;
+      } else {
+        if (gridList[curNum][g][1] <= maxGrid) {
+          let myDiamond = [];
+          myDiamond.push(gridList[curNum][g]);
+          myDiamond.push(previous[g-gridCount+1]);
+          myDiamond.push(grandma[g-gridCount]);
+          myDiamond.push(previous[g-gridCount]);
+          diamondList.push(myDiamond);
+        }
+      }
+    } // end g loop
+    grandma = JSON.parse(JSON.stringify(previous));
+    previous = JSON.parse(JSON.stringify(gridList[curNum]));
+    minGrid = previous[0][1];
+    maxGrid = previous[previous.length-1][1]
+    if (grandma[0][1]<minGrid) {
+      grandma = grandma.slice(1,1000);
+    }
+    if (grandma[grandma.length-1][1]>maxGrid) {
+      grandma.pop();
+    }
+
+  } // end curNum loop
+// alert(JSON.stringify(diamondList));
+  diamondList.forEach(function(diamond) {
+    normalPoly(diamond);
+  });
+} // end makeDiamonds()
+
+function normalPoly(diamond) {
+  let a0x = diamond[0][2];
+  let a0y = diamond[0][3];
+  let a1x = diamond[1][2];
+  let a1y = diamond[1][3];
+  let a2x = diamond[2][2];
+  let a2y = diamond[2][3];
+  let a3x = diamond[3][2];
+  let a3y = diamond[3][3];
+  let m0x = (a0x+a1x)/2;
+  let m0y = (a0y+a1y)/2;
+  let m1x = (a1x+a2x)/2;
+  let m1y = (a1y+a2y)/2;
+  let m2x = (a2x+a3x)/2;
+  let m2y = (a2y+a3y)/2;
+  let m3x = (a3x+a0x)/2;
+  let m3y = (a3y+a0y)/2;
+  let startPt = pointList.length;
+  pointList.push([a0x,a0y,1]);
+  pointList.push([m0x,m0y,1]);
+  pointList.push([a1x,a1y,1]);
+  pointList.push([m1x,m1y,1]);
+  pointList.push([a2x,a2y,1]);
+  pointList.push([m2x,m2y,1]);
+  pointList.push([a3x,a3y,1]);
+  pointList.push([m3x,m3y,1]);
+  let nextPoly = [];
+  nextPoly.push([startPt,[0,0]]);
+  nextPoly.push([startPt+1,[0,0]]);
+  nextPoly.push([startPt+3,[0,0]]);
+  nextPoly.push([startPt+4,[0,0]]);
+  nextPoly.push([startPt+5,[0,0]]);
+  nextPoly.push([startPt+7,[0,0]]);
+  polyList.push(nextPoly);
+  nextPoly = [];
+  nextPoly.push([startPt+1,[0,0]]);
+  nextPoly.push([startPt+2,[0,0]]);
+  nextPoly.push([startPt+3,[0,0]]);
+  polyList.push(nextPoly);
+  nextPoly = [];
+  nextPoly.push([startPt+5,[0,0]]);
+  nextPoly.push([startPt+6,[0,0]]);
+  nextPoly.push([startPt+7,[0,0]]);
+  polyList.push(nextPoly);
+} // end normalPoly()
+
+
 function fill2024() {
   Ax = 20000;
   By = 20000;
@@ -184,6 +278,8 @@ function fill2024() {
 //alert([lilCent2Y, bigCent2Y]);
 
 // need from above: inv2CentY, inv2Rad, bigCent2Y, midLineY, edgeLen 
+  let gridList = [];
+
 //let i = 477.5;
   for (let i = 477.5; i>384;i--) {
 
@@ -199,10 +295,9 @@ function fill2024() {
   }
   let myMult = (Math.sqrt(5)+1)/2-1;
   let multiplier = 1;
-  let gridArray = [];
   for (let i = 0;i<blah.length-1;i++) {
 //    if (blah[i][20]+blah[i][21]>0) {
-
+    let gridLine = [];
     blah[i].push(blah[i][7]-blah[i][8]); // 24 arcAngTot
     blah[i].push(blah[i][24]/blah[i][10]); // 25 angPerRow
     if (blah[i][14]===1.5) {blah[i].push(-0.5)}
@@ -214,14 +309,16 @@ function fill2024() {
     blah[i].push(blah[i][29]+blah[i][8]); // 30 gridEnd
     blah[i].push(blah[i][30]-blah[i][28]); // 31 gridAngTot
     blah[i].push((blah[i][18]+blah[i][14]-2+blah[i][11])/2); // 32 gridRows
-    blah[i].push(blah[i][31]/blah[i][32]); // 33 angPerGrid
-    blah[i].push((blah[i][17]-blah[i][16])/blah[i][32]); // 34 fixRadPerGrid
   
     if (blah[i][19] != 1) {
       blah[i][22]= multiplier*myMult-Math.floor(multiplier*myMult); //22 growDecimal
       blah[i][23]=Math.floor((blah[i][32]-1)*blah[i][22])+1; //23 7gon place
+      blah[i][32] += 0.5 + 0.25*blah[i][19] - blah[i][19]*(blah[i][26]+0.5)/4; // fix 32 grid rows when growing
       multiplier++;
     }
+
+    blah[i].push(blah[i][31]/blah[i][32]); // 33 angPerGrid
+    blah[i].push((blah[i][17]-blah[i][16])/blah[i][32]); // 34 fixRadPerGrid
 
     for (let j = 0; j<= blah[i][32]; j++) {
       let nextGrid = [];
@@ -229,27 +326,41 @@ function fill2024() {
       nextGrid.push(blah[i][26]+2*j);
       nextGrid.push(Math.cos(blah[i][28]+j*blah[i][33])*(blah[i][6]+j*edgeLen*blah[i][34])+blah[i][4]);
       nextGrid.push(Math.sin(blah[i][28]+j*blah[i][33])*(blah[i][6]+j*edgeLen*blah[i][34])+blah[i][5]);
-      // Triangles offcenter. the *2 & +.3 are tweaks to adjust. Did I make an error in my calculations?
-      let hepta = 0;
-      if (blah[i][23] != 0) { 
+      pointList.push([nextGrid[2],nextGrid[3],-1]);
+      let hepta = 1;
+      if (blah[i][19] === 0) { 
         if (blah[i][23]*2+blah[i][26] === nextGrid[1]) {
-          hepta = blah[i][19]-1; 
+          hepta = blah[i][19]; 
+          j -= 0.75;
+        }
+      }
+      if (blah[i][19] === 2) { 
+        if (blah[i][23]*2+blah[i][26] === nextGrid[1]) {
+          hepta = blah[i][19]; 
+          for (let k = j+.5; k<= blah[i][32]; k++) {
+            nextGrid.push(hepta);
+            gridLine.push(nextGrid);
+            nextGrid = [blah[i][13]];
+            nextGrid.push(blah[i][26]+2*k);
+            nextGrid.push(Math.cos(blah[i][28]+k*blah[i][33])*(blah[i][6]+k*edgeLen*blah[i][34])+blah[i][4]);
+            nextGrid.push(Math.sin(blah[i][28]+k*blah[i][33])*(blah[i][6]+k*edgeLen*blah[i][34])+blah[i][5]);
+            pointList.push([nextGrid[2],nextGrid[3],-1]);
+            hepta = 1;
+          } // end k loop
+     //     j -= 0.5;
         }
       }
       nextGrid.push(hepta);
-      
-//alert(nextGrid);
-      gridArray.push(nextGrid);
+      gridLine.push(nextGrid);
     } // end j loop
-//alert(blah[i]);
+    gridList.push(gridLine);
   } // end i loop
-//alert(gridArray);
-  gridArray.forEach(function(nextGrid) {
-    pointList.push([nextGrid[2],nextGrid[3],-1]);
-  });
 
-//  goSaveFill(gridArray);
-goSaveFill(blah);
+  makeDiamond(gridList);
+
+
+//  goSaveFill(gridList);
+//goSaveFill(blah);
 
 }
 
@@ -328,7 +439,6 @@ function findCirCent(ax,ay,bx,by,cx,cy) {
 }
 
 function do2024() {
-alert(90);
 let xMult = 2;
 let yMult = 2;
 let yAdder = -220;
