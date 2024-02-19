@@ -157,8 +157,15 @@ function makeDiamond(gridList) {
   if (grandma[grandma.length-1][1]>maxGrid) {
     grandma.pop();
   }
+
+  let gridLineType = 0;
+  let firstHalf = [];
+  let secondHalf = [];
+  let secondGrandma = [];
+
 //  for (let curNum = 2; curNum< gridList.length; curNum++) {
-for (let curNum = 2; curNum< 4; curNum++) {
+for (let curNum = 2; curNum< 6; curNum++) {
+  if (gridLineType === 1) {gridLineType = 2;}
     let gridCount = 0;
     for (let g = 0; g < gridList[curNum].length; g++) {
       if (gridList[curNum][g][1] < minGrid) {
@@ -166,18 +173,49 @@ for (let curNum = 2; curNum< 4; curNum++) {
       } else {
         if (gridList[curNum][g][1] <= maxGrid) {
           let myDiamond = [];
-          myDiamond.push(gridList[curNum][g]);
-          myDiamond.push(previous[g-gridCount+1]);
-          myDiamond.push(grandma[g-gridCount]);
-          myDiamond.push(previous[g-gridCount]);
-          diamondList.push(myDiamond);
-        }
-      }
+          if (gridList[curNum][g][4]===0) { // upper grow
+            myDiamond.push(gridList[curNum][g]);
+            myDiamond.push(gridList[curNum][g+1]);
+            myDiamond.push(previous[g-gridCount+1]);
+            myDiamond.push(grandma[g-gridCount]);
+            myDiamond.push(previous[g-gridCount]);
+            diamondList.push(myDiamond);
+            g++;
+            gridLineType = 1;
+            firstHalf = gridList[curNum].slice(0,g);
+            secondHalf = gridList[curNum].slice(g,2000);
+            secondGrandma = JSON.parse(JSON.stringify(previous));
+          } else if (gridList[curNum][g][4]===2) { // lower grow
+            myDiamond.push(gridList[curNum][g]);
+            myDiamond.push(previous[g-gridCount+1]);
+            myDiamond.push(grandma[g-gridCount]);
+            myDiamond.push(previous[g-gridCount]);
+            diamondList.push(myDiamond);
+
+          } else { // normal
+            
+            myDiamond.push(gridList[curNum][g]);
+            myDiamond.push(previous[g-gridCount+1]);
+            myDiamond.push(grandma[g-gridCount]);
+            myDiamond.push(previous[g-gridCount]);
+            diamondList.push(myDiamond);
+          }
+        } // maxGrid passes
+      } // minGrid passes
     } // end g loop
     grandma = JSON.parse(JSON.stringify(previous));
     previous = JSON.parse(JSON.stringify(gridList[curNum]));
+
+    if (gridLineType === 1) { previous = JSON.parse(JSON.stringify(firstHalf));}
+    if (gridLineType === 2) { 
+      minGrid = secondHalf[0][1];
+      maxGrid = secondHalf[previous.length-1][1];
+      
+    } // end gridLineType ===2
+
+
     minGrid = previous[0][1];
-    maxGrid = previous[previous.length-1][1]
+    maxGrid = previous[previous.length-1][1];
     if (grandma[0][1]<minGrid) {
       grandma = grandma.slice(1,1000);
     }
@@ -188,7 +226,17 @@ for (let curNum = 2; curNum< 4; curNum++) {
   } // end curNum loop
 // alert(JSON.stringify(diamondList));
   diamondList.forEach(function(diamond) {
-    normalPoly(diamond);
+    if (diamond.length >4) {
+      heptaPoly(diamond);
+    } else 
+      if (diamond[2][4]===0){
+        pentaLPoly(diamond);
+    } else
+      if (diamond[2][4]===2){
+        pentaRPoly(diamond);
+    } else {
+      normalPoly(diamond);
+    }
   });
 } // end makeDiamonds()
 
@@ -238,6 +286,139 @@ function normalPoly(diamond) {
   polyList.push(nextPoly);
 } // end normalPoly()
 
+function heptaPoly(diamond) {
+  let a0x = diamond[0][2];
+  let a0y = diamond[0][3];
+  let a1x = diamond[1][2];
+  let a1y = diamond[1][3];
+  let a2x = diamond[2][2];
+  let a2y = diamond[2][3];
+  let a3x = diamond[3][2];
+  let a3y = diamond[3][3];
+  let a4x = diamond[4][2];
+  let a4y = diamond[4][3];
+  let m1x = (a1x+a2x)/2;
+  let m1y = (a1y+a2y)/2;
+  let m2x = (a2x+a3x)/2;
+  let m2y = (a2y+a3y)/2;
+  let m3x = (a3x+a4x)/2;
+  let m3y = (a3y+a4y)/2;
+  let m4x = (a4x+a0x)/2;
+  let m4y = (a4y+a0y)/2;
+  let startPt = pointList.length;
+  pointList.push([a0x,a0y,1]);
+  pointList.push([a1x,a1y,1]);
+  pointList.push([m1x,m1y,1]);
+  pointList.push([a2x,a2y,1]);
+  pointList.push([m2x,m2y,1]);
+  pointList.push([a3x,a3y,1]);
+  pointList.push([m3x,m3y,1]);
+  pointList.push([a4x,a4y,1]);
+  pointList.push([m4x,m4y,1]);
+  let nextPoly = [];
+  nextPoly.push([startPt,[0,0]]);
+  nextPoly.push([startPt+1,[0,0]]);
+  nextPoly.push([startPt+2,[0,0]]);
+  nextPoly.push([startPt+4,[0,0]]);
+  nextPoly.push([startPt+5,[0,0]]);
+  nextPoly.push([startPt+6,[0,0]]);
+  nextPoly.push([startPt+8,[0,0]]);
+  polyList.push(nextPoly);
+  nextPoly = [];
+  nextPoly.push([startPt+2,[0,0]]);
+  nextPoly.push([startPt+3,[0,0]]);
+  nextPoly.push([startPt+4,[0,0]]);
+  polyList.push(nextPoly);
+  nextPoly = [];
+  nextPoly.push([startPt+6,[0,0]]);
+  nextPoly.push([startPt+7,[0,0]]);
+  nextPoly.push([startPt+8,[0,0]]);
+  polyList.push(nextPoly);
+} // end heptaPoly()
+
+function pentaLPoly(diamond) {
+  let a0x = diamond[0][2];
+  let a0y = diamond[0][3];
+  let a1x = diamond[1][2];
+  let a1y = diamond[1][3];
+  let a2x = diamond[2][2];
+  let a2y = diamond[2][3];
+  let a3x = diamond[3][2];
+  let a3y = diamond[3][3];
+  let m0x = (a0x+a1x)/2;
+  let m0y = (a0y+a1y)/2;
+  let m2x = (a2x+a3x)/2;
+  let m2y = (a2y+a3y)/2;
+  let m3x = (a3x+a0x)/2;
+  let m3y = (a3y+a0y)/2;
+  let startPt = pointList.length;
+  pointList.push([a0x,a0y,1]);
+  pointList.push([m0x,m0y,1]);
+  pointList.push([a1x,a1y,1]);
+  pointList.push([a2x,a2y,1]);
+  pointList.push([m2x,m2y,1]);
+  pointList.push([a3x,a3y,1]);
+  pointList.push([m3x,m3y,1]);
+  let nextPoly = [];
+  nextPoly.push([startPt,[0,0]]);
+  nextPoly.push([startPt+1,[0,0]]);
+  nextPoly.push([startPt+3,[0,0]]);
+  nextPoly.push([startPt+4,[0,0]]);
+  nextPoly.push([startPt+6,[0,0]]);
+  polyList.push(nextPoly);
+  nextPoly = [];
+  nextPoly.push([startPt+1,[0,0]]);
+  nextPoly.push([startPt+2,[0,0]]);
+  nextPoly.push([startPt+3,[0,0]]);
+  polyList.push(nextPoly);
+  nextPoly = [];
+  nextPoly.push([startPt+4,[0,0]]);
+  nextPoly.push([startPt+5,[0,0]]);
+  nextPoly.push([startPt+6,[0,0]]);
+  polyList.push(nextPoly);
+} // end pentaLPoly()
+
+function pentaRPoly(diamond) {
+  let a0x = diamond[0][2];
+  let a0y = diamond[0][3];
+  let a1x = diamond[1][2];
+  let a1y = diamond[1][3];
+  let a2x = diamond[2][2];
+  let a2y = diamond[2][3];
+  let a3x = diamond[3][2];
+  let a3y = diamond[3][3];
+  let m0x = (a0x+a1x)/2;
+  let m0y = (a0y+a1y)/2;
+  let m1x = (a1x+a2x)/2;
+  let m1y = (a1y+a2y)/2;
+  let m3x = (a3x+a0x)/2;
+  let m3y = (a3y+a0y)/2;
+  let startPt = pointList.length;
+  pointList.push([a0x,a0y,1]);
+  pointList.push([m0x,m0y,1]);
+  pointList.push([a1x,a1y,1]);
+  pointList.push([m1x,m1y,1]);
+  pointList.push([a2x,a2y,1]);
+  pointList.push([a3x,a3y,1]);
+  pointList.push([m3x,m3y,1]);
+  let nextPoly = [];
+  nextPoly.push([startPt,[0,0]]);
+  nextPoly.push([startPt+1,[0,0]]);
+  nextPoly.push([startPt+3,[0,0]]);
+  nextPoly.push([startPt+4,[0,0]]);
+  nextPoly.push([startPt+6,[0,0]]);
+  polyList.push(nextPoly);
+  nextPoly = [];
+  nextPoly.push([startPt+1,[0,0]]);
+  nextPoly.push([startPt+2,[0,0]]);
+  nextPoly.push([startPt+3,[0,0]]);
+  polyList.push(nextPoly);
+  nextPoly = [];
+  nextPoly.push([startPt+4,[0,0]]);
+  nextPoly.push([startPt+5,[0,0]]);
+  nextPoly.push([startPt+6,[0,0]]);
+  polyList.push(nextPoly);
+} // end pentaRPoly()
 
 function fill2024() {
   Ax = 20000;
@@ -320,6 +501,10 @@ function fill2024() {
     blah[i].push(blah[i][31]/blah[i][32]); // 33 angPerGrid
     blah[i].push((blah[i][17]-blah[i][16])/blah[i][32]); // 34 fixRadPerGrid
 
+if (i>0 && blah[i-1][19]===0) {
+  blah[i][32]= Math.floor((blah[i-1][23]*2+blah[i-1][26]-blah[i][26])/2);
+}
+
     for (let j = 0; j<= blah[i][32]; j++) {
       let nextGrid = [];
       nextGrid.push(blah[i][13]);
@@ -331,7 +516,7 @@ function fill2024() {
       if (blah[i][19] === 0) { 
         if (blah[i][23]*2+blah[i][26] === nextGrid[1]) {
           hepta = blah[i][19]; 
-          j -= 0.75;
+          j -= 0.5;
         }
       }
       if (blah[i][19] === 2) { 
@@ -360,7 +545,7 @@ function fill2024() {
 
 
 //  goSaveFill(gridList);
-//goSaveFill(blah);
+//  goSaveFill(blah);
 
 }
 
