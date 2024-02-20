@@ -171,38 +171,46 @@ alert(grandma);
   let secondGrandma = [];
 
 //  for (let curNum = 2; curNum< gridList.length; curNum++) {
-  for (let curNum = 2; curNum< 6; curNum++) {
-    if (gridLineType === 1) {gridLineType = 2;}
+for (let curNum = 2; curNum< 6; curNum++) {
+  if (gridLineType === 1) {gridLineType = 2;}
+    let gridCount = 0;
     let thisLine = setLimits(gridList[curNum],previous);
-    for (let g = 0; g < thisLine.length; g++) {
-      let myDiamond = [];
-      if (thisLine[g][4]===0) { // upper grow
-        myDiamond.push(thisLine[g]);
-        myDiamond.push(thisLine[g+1]);
-        myDiamond.push(previous[g+1]);
-        myDiamond.push(grandma[g]);
-        myDiamond.push(previous[g]);
-        diamondList.push(myDiamond);
-        g++;
-        gridLineType = 1;
-        firstHalf = thisLine.slice(0,g);
-        secondHalf = thisLine.slice(g,2000);
-        secondGrandma = JSON.parse(JSON.stringify(previous));
 
-      } else if (thisLine[g][4]===2) { // lower grow
-        myDiamond.push(thisLine[g]);
-        myDiamond.push(previous[g+1]);
-        myDiamond.push(grandma[g]);
-        myDiamond.push(previous[g]);
-        diamondList.push(myDiamond);
+    for (let g = 0; g < gridList[curNum].length; g++) {
+      if (gridList[curNum][g][1] < minGrid) {
+        gridCount = 1;
+      } else {
+        if (gridList[curNum][g][1] <= maxGrid) {
+          let myDiamond = [];
+          if (gridList[curNum][g][4]===0) { // upper grow
+            myDiamond.push(gridList[curNum][g]);
+            myDiamond.push(gridList[curNum][g+1]);
+            myDiamond.push(previous[g-gridCount+1]);
+            myDiamond.push(grandma[g-gridCount]);
+            myDiamond.push(previous[g-gridCount]);
+            diamondList.push(myDiamond);
+            g++;
+            gridLineType = 1;
+            firstHalf = gridList[curNum].slice(0,g);
+            secondHalf = gridList[curNum].slice(g,2000);
+            secondGrandma = JSON.parse(JSON.stringify(previous));
+          } else if (gridList[curNum][g][4]===2) { // lower grow
+            myDiamond.push(gridList[curNum][g]);
+            myDiamond.push(previous[g-gridCount+1]);
+            myDiamond.push(grandma[g-gridCount]);
+            myDiamond.push(previous[g-gridCount]);
+            diamondList.push(myDiamond);
 
-      } else { // normal
-        myDiamond.push(thisLine[g]);
-        myDiamond.push(previous[g+1]);
-        myDiamond.push(grandma[g]);
-        myDiamond.push(previous[g]);
-        diamondList.push(myDiamond);
-      }
+          } else { // normal
+            
+            myDiamond.push(gridList[curNum][g]);
+            myDiamond.push(previous[g-gridCount+1]);
+            myDiamond.push(grandma[g-gridCount]);
+            myDiamond.push(previous[g-gridCount]);
+            diamondList.push(myDiamond);
+          }
+        } // maxGrid passes
+      } // minGrid passes
     } // end g loop
     grandma = JSON.parse(JSON.stringify(previous));
     previous = JSON.parse(JSON.stringify(gridList[curNum]));
