@@ -149,14 +149,21 @@ function makeDiamond(gridList) {
   let diamondList = [];
   let grandma = gridList[0];
   let previous = gridList[1];
+
+
   let minGrid = previous[0][1];
   let maxGrid = previous[previous.length-1][1]
+/*
   if (grandma[0][1]<minGrid) {
     grandma = grandma.slice(1,1000);
   }
   if (grandma[grandma.length-1][1]>maxGrid) {
     grandma.pop();
   }
+*/
+ 
+  grandma = setLimits(grandma,previous);
+alert(grandma);
 
   let gridLineType = 0;
   let firstHalf = [];
@@ -208,6 +215,10 @@ for (let curNum = 2; curNum< 6; curNum++) {
 
     if (gridLineType === 1) { previous = JSON.parse(JSON.stringify(firstHalf));}
     if (gridLineType === 2) { 
+//alert(previous);
+//alert(grandma);
+//alert(secondHalf);
+//alert(secondGrandma);
       minGrid = secondHalf[0][1];
       maxGrid = secondHalf[previous.length-1][1];
       
@@ -239,6 +250,25 @@ for (let curNum = 2; curNum< 6; curNum++) {
     }
   });
 } // end makeDiamonds()
+
+function setLimits(A,B) {
+
+  //  return list A within the limits of B.
+  let maxB = -5;
+  let minB = 2000;
+  for (let ii = 0; ii < B.length; ii++) {
+    if (maxB < B[ii][1]) {maxB = B[ii][1]}
+    if (minB > B[ii][1]) {minB = B[ii][1]}
+  }
+  let newA = [];
+  for (let ii = 0; ii < A.length; ii++) {
+    if (minB <= A[ii][1] && maxB >= A[ii][1]) {
+      newA.push(A[ii]);
+    }
+  }
+  return(newA);
+
+}
 
 function normalPoly(diamond) {
   let a0x = diamond[0][2];
