@@ -150,23 +150,25 @@ function makeDiamond(gridList) {
   let grandma = gridList[0];
   let previous = gridList[1];
 
-
-  let minGrid = previous[0][1];
-  let maxGrid = previous[previous.length-1][1]
-
- 
   grandma = setLimits(grandma,previous);
 
   let gridLineType = 0;
   let firstHalf = [];
   let secondHalf = [];
   let secondGrandma = [];
+  let firstGrandma = [];
+  let corrector = 0;
 
 //  for (let curNum = 2; curNum< gridList.length; curNum++) {
-  for (let curNum = 2; curNum< 7; curNum++) {
+
+
+  for (let curNum = 2; curNum< 16; curNum++) {
     if (gridLineType === 1) {gridLineType = 2;}
+    if (gridLineType === 3) {corrector = 0; gridLineType = 4;}
+
     let thisLine = setLimits(gridList[curNum],previous);
     for (let g = 0; g < thisLine.length; g++) {
+      if (gridLineType === 3) { corrector = 1; }
       let myDiamond = [];
       if (thisLine[g][4]===0) { // upper grow
         myDiamond.push(thisLine[g]);
@@ -184,19 +186,35 @@ function makeDiamond(gridList) {
 
       } else if (thisLine[g][4]===2) { // lower grow
         myDiamond.push(thisLine[g]);
+        myDiamond.push(thisLine[g+1]);
         myDiamond.push(previous[g+1]);
         myDiamond.push(grandma[g]);
         myDiamond.push(previous[g]);
         diamondList.push(myDiamond);
+        let myCutPoint = thisLine[g][1];
+        g++;
+        gridLineType = 3;
+
+//        for (h = 1; h<gridList[curNum].length; h++) {
+//          if (gridList[curNum][h][1]<gridList[curNum][h-1][1]) {
+//            secondHalf = gridList[curNum].slice(h,2000);
+//          }
+//        }
+
+        firstHalf = setLimits(gridList[curNum],[[0,-2],[0,myCutPoint]]);
+        secondHalf = setLimits(gridList[curNum],[[0,myCutPoint+.1],[0,2000]]);
+        firstGrandma = setLimits(previous,firstHalf);
+
 
       } else { // normal
         myDiamond.push(thisLine[g]);
-        myDiamond.push(previous[g+1]);
-        myDiamond.push(grandma[g]);
-        myDiamond.push(previous[g]);
+        myDiamond.push(previous[g+1-corrector]);
+        myDiamond.push(grandma[g-corrector]);
+        myDiamond.push(previous[g-corrector]);
         diamondList.push(myDiamond);
       }
     } // end g loop
+
     grandma = JSON.parse(JSON.stringify(previous));
     previous = JSON.parse(JSON.stringify(gridList[curNum]));
 
@@ -204,13 +222,23 @@ function makeDiamond(gridList) {
     if (gridLineType === 2) { 
       grandma = grandma.concat(secondGrandma);
       previous = previous.concat(secondHalf);
+      gridLineType = 0;
     } // end gridLineType ===2
+    if (gridLineType === 3) { previous = JSON.parse(JSON.stringify(secondHalf));}
+    if (gridLineType === 4) { 
+      grandma = firstGrandma.concat(grandma);
+      previous = firstHalf.concat(previous);
+      gridLineType = 0;
+    } // end gridLineType ===4
 
   grandma = setLimits(grandma,previous);
 
   } // end curNum loop
 
 // alert(JSON.stringify(diamondList));
+
+//goSaveFill(diamondList);
+
   diamondList.forEach(function(diamond) {
     if (diamond.length >4) {
       heptaPoly(diamond);
@@ -218,7 +246,7 @@ function makeDiamond(gridList) {
       if (diamond[2][4]===0){
         pentaLPoly(diamond);
     } else
-      if (diamond[2][4]===2){
+      if (diamond[3][4]===2){
         pentaRPoly(diamond);
     } else {
       normalPoly(diamond);
@@ -474,7 +502,7 @@ function fill2024() {
     blah.push(newPtList);
   }
   for (let i = 0;i<blah.length-1;i++) {
-   // usually stays 1. If 0, big increases. if 2, lil increases.
+   // [19] usually stays 1. If 0, big increases. if 2, lil increases.
     blah[i][19]=blah[i+1][17]-blah[i][17]; // 19 grow
 //   if (blah[i][19]===0) {blah[i-1][20]=1} // 20 Big (unused)
 //    if (blah[i][19]===2) {blah[i-1][21]=1} // 21 Lil (unused)
@@ -499,12 +527,16 @@ function fill2024() {
     if (blah[i][19] != 1) {
       blah[i][22]= multiplier*myMult-Math.floor(multiplier*myMult); //22 growDecimal
       blah[i][23]=Math.floor((blah[i][32]-1)*blah[i][22])+1; //23 7gon place
-      blah[i][32] += 0.5 + 0.25*blah[i][19] - blah[i][19]*(blah[i][26]+0.5)/4; // fix 32 grid rows when growing
+      blah[i][32] += 0.5  - blah[i][19]*(blah[i][26]+0.5)/4; // fix 32 grid rows when growing
       multiplier++;
     }
 
     blah[i].push(blah[i][31]/blah[i][32]); // 33 angPerGrid
     blah[i].push((blah[i][17]-blah[i][16])/blah[i][32]); // 34 fixRadPerGrid
+
+    if (blah[i][19] === 2) {
+      blah[i][32] += 0.25*blah[i][19] ; // fix 32 grid rows when growing
+    }
 
 if (i>0 && blah[i-1][19]===0) {
   blah[i][32]= Math.floor((blah[i-1][23]*2+blah[i-1][26]-blah[i][26])/2);
@@ -537,6 +569,12 @@ if (i>0 && blah[i-1][19]===0) {
             pointList.push([nextGrid[2],nextGrid[3],-1]);
             hepta = 1;
           } // end k loop
+          nextGrid.push(hepta);
+          gridLine.push(nextGrid);
+          gridList.push(gridLine);
+          gridLine = []; 
+          blah[i][6] += edgeLen;
+          continue;
      //     j -= 0.5;
         }
       }

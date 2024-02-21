@@ -153,17 +153,9 @@ function makeDiamond(gridList) {
 
   let minGrid = previous[0][1];
   let maxGrid = previous[previous.length-1][1]
-/*
-  if (grandma[0][1]<minGrid) {
-    grandma = grandma.slice(1,1000);
-  }
-  if (grandma[grandma.length-1][1]>maxGrid) {
-    grandma.pop();
-  }
-*/
+
  
   grandma = setLimits(grandma,previous);
-alert(grandma);
 
   let gridLineType = 0;
   let firstHalf = [];
@@ -171,72 +163,54 @@ alert(grandma);
   let secondGrandma = [];
 
 //  for (let curNum = 2; curNum< gridList.length; curNum++) {
-for (let curNum = 2; curNum< 6; curNum++) {
-  if (gridLineType === 1) {gridLineType = 2;}
-    let gridCount = 0;
+  for (let curNum = 2; curNum< 9; curNum++) {
+    if (gridLineType === 1) {gridLineType = 2;}
     let thisLine = setLimits(gridList[curNum],previous);
+    for (let g = 0; g < thisLine.length; g++) {
+      let myDiamond = [];
+      if (thisLine[g][4]===0) { // upper grow
+        myDiamond.push(thisLine[g]);
+        myDiamond.push(thisLine[g+1]);
+        myDiamond.push(previous[g+1]);
+        myDiamond.push(grandma[g]);
+        myDiamond.push(previous[g]);
+        diamondList.push(myDiamond);
+        let myCutPoint = thisLine[g][1];
+        g++;
+        gridLineType = 1;
+        firstHalf = setLimits(gridList[curNum],[[0,-2],[0,myCutPoint]]);
+        secondHalf = setLimits(gridList[curNum],[[0,myCutPoint+.1],[0,2000]]);
+        secondGrandma = setLimits(previous,secondHalf);
 
-    for (let g = 0; g < gridList[curNum].length; g++) {
-      if (gridList[curNum][g][1] < minGrid) {
-        gridCount = 1;
-      } else {
-        if (gridList[curNum][g][1] <= maxGrid) {
-          let myDiamond = [];
-          if (gridList[curNum][g][4]===0) { // upper grow
-            myDiamond.push(gridList[curNum][g]);
-            myDiamond.push(gridList[curNum][g+1]);
-            myDiamond.push(previous[g-gridCount+1]);
-            myDiamond.push(grandma[g-gridCount]);
-            myDiamond.push(previous[g-gridCount]);
-            diamondList.push(myDiamond);
-            g++;
-            gridLineType = 1;
-            firstHalf = gridList[curNum].slice(0,g);
-            secondHalf = gridList[curNum].slice(g,2000);
-            secondGrandma = JSON.parse(JSON.stringify(previous));
-          } else if (gridList[curNum][g][4]===2) { // lower grow
-            myDiamond.push(gridList[curNum][g]);
-            myDiamond.push(previous[g-gridCount+1]);
-            myDiamond.push(grandma[g-gridCount]);
-            myDiamond.push(previous[g-gridCount]);
-            diamondList.push(myDiamond);
+      } else if (thisLine[g][4]===2) { // lower grow
+        myDiamond.push(thisLine[g]);
+        myDiamond.push(previous[g+1]);
+        myDiamond.push(grandma[g]);
+        myDiamond.push(previous[g]);
+        diamondList.push(myDiamond);
 
-          } else { // normal
-            
-            myDiamond.push(gridList[curNum][g]);
-            myDiamond.push(previous[g-gridCount+1]);
-            myDiamond.push(grandma[g-gridCount]);
-            myDiamond.push(previous[g-gridCount]);
-            diamondList.push(myDiamond);
-          }
-        } // maxGrid passes
-      } // minGrid passes
+      } else { // normal
+        myDiamond.push(thisLine[g]);
+        myDiamond.push(previous[g+1]);
+        myDiamond.push(grandma[g]);
+        myDiamond.push(previous[g]);
+        diamondList.push(myDiamond);
+      }
     } // end g loop
     grandma = JSON.parse(JSON.stringify(previous));
     previous = JSON.parse(JSON.stringify(gridList[curNum]));
 
     if (gridLineType === 1) { previous = JSON.parse(JSON.stringify(firstHalf));}
     if (gridLineType === 2) { 
-//alert(previous);
-//alert(grandma);
-//alert(secondHalf);
-//alert(secondGrandma);
-      minGrid = secondHalf[0][1];
-      maxGrid = secondHalf[previous.length-1][1];
-      
+      grandma = grandma.concat(secondGrandma);
+      previous = previous.concat(secondHalf);
+      gridLineType = 0;
     } // end gridLineType ===2
 
-
-    minGrid = previous[0][1];
-    maxGrid = previous[previous.length-1][1];
-    if (grandma[0][1]<minGrid) {
-      grandma = grandma.slice(1,1000);
-    }
-    if (grandma[grandma.length-1][1]>maxGrid) {
-      grandma.pop();
-    }
+  grandma = setLimits(grandma,previous);
 
   } // end curNum loop
+
 // alert(JSON.stringify(diamondList));
   diamondList.forEach(function(diamond) {
     if (diamond.length >4) {
