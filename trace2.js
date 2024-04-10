@@ -1,8 +1,8 @@
 var img;
 var boxSize = 7;
-var sized=1;
-var xOffset=0;
-var yOffset=0;
+var sized=12;
+var xOffset=-100;
+var yOffset=272;
 var w;
 var h;
 var posi;
@@ -19,10 +19,10 @@ var myTiling;
 var myImage;
 var baseX = 10;
 var baseY = 10;
-var Ax = 300;
+var Ax = 20000;
 var Ay = 0;
 var Bx = 0;
-var By = 300;
+var By = 20000;
 var mode = 0;
 var newPointList = [];
 var newPolyList = [];
@@ -30,9 +30,13 @@ var newAx = 0;
 var newAy = 0;
 var newBx = 0;
 var newBy = 0;
+var nextBlah = [];
 
 function init() {
-  sized=1;
+//  sized=13;
+//  xOffset=-100;
+//  yOffset=272;
+sized=1;
   xOffset=0;
   yOffset=0;
   pointList = [];
@@ -50,10 +54,21 @@ function init() {
   d.style.maxHeight= window.innerHeight-110 + "px";
   d.style.height = window.innerHeight-110 + "px";
   d.style.maxWidth= window.innerWidth-170 + "px";
-do2024();
+//do2024();
 //do192();
 //  doOcts();
-fill2024();
+//fill2024();
+// newMerge();
+//right1248();
+//fill1248();
+//newMerge();
+//  polyList.forEach(function(nextPoly) {
+//    nextPoly.reverse();
+//  });
+//dee();
+//fillDee();
+//ob();
+//fillOb();
   draw();
 }
 
@@ -145,7 +160,9 @@ function addRegPoly(numSides,centX,centY,radius,startAngle,lock) {
   polyList.push(newPoly);
 }
 
-function makeDiamond(gridList) {
+
+function makeDiamond(gridList,convex) {
+
   let diamondList = [];
   let grandma = gridList[0];
   let previous = gridList[1];
@@ -159,15 +176,17 @@ function makeDiamond(gridList) {
   let firstGrandma = [];
   let corrector = 0;
 
-//  for (let curNum = 2; curNum< gridList.length; curNum++) {
+  for (let curNum = 2; curNum< gridList.length; curNum++) {
 
 
-  for (let curNum = 2; curNum< 16; curNum++) {
-    if (gridLineType === 1) {gridLineType = 2;}
+//  for (let curNum = 2; curNum< 22; curNum++) {
+
+    if (gridLineType === 1) {corrector = 0; gridLineType = 2;}
     if (gridLineType === 3) {corrector = 0; gridLineType = 4;}
 
     let thisLine = setLimits(gridList[curNum],previous);
     for (let g = 0; g < thisLine.length; g++) {
+      if (gridLineType === 1) { corrector = 1; }
       if (gridLineType === 3) { corrector = 1; }
       let myDiamond = [];
       if (thisLine[g][4]===0) { // upper grow
@@ -194,17 +213,9 @@ function makeDiamond(gridList) {
         let myCutPoint = thisLine[g][1];
         g++;
         gridLineType = 3;
-
-//        for (h = 1; h<gridList[curNum].length; h++) {
-//          if (gridList[curNum][h][1]<gridList[curNum][h-1][1]) {
-//            secondHalf = gridList[curNum].slice(h,2000);
-//          }
-//        }
-
         firstHalf = setLimits(gridList[curNum],[[0,-2],[0,myCutPoint]]);
         secondHalf = setLimits(gridList[curNum],[[0,myCutPoint+.1],[0,2000]]);
         firstGrandma = setLimits(previous,firstHalf);
-
 
       } else { // normal
         myDiamond.push(thisLine[g]);
@@ -237,7 +248,7 @@ function makeDiamond(gridList) {
 
 // alert(JSON.stringify(diamondList));
 
-//goSaveFill(diamondList);
+// goSaveFill(diamondList);
 
   diamondList.forEach(function(diamond) {
     if (diamond.length >4) {
@@ -252,7 +263,9 @@ function makeDiamond(gridList) {
       normalPoly(diamond);
     }
   });
-} // end makeDiamonds()
+
+} // end makeDiamond()
+
 
 function setLimits(A,B) {
 
@@ -495,9 +508,9 @@ function fill2024() {
   let gridList = [];
 
 //let i = 477.5;
-  for (let i = 477.5; i>384;i--) {
+//  for (let i = 477.5; i>384;i--) {
+  for (let i = 477.5; i>381;i--) {
 
-//  for (let i = 477.5; i>475;i--) {
     let newPtList = findNewPts(i, inv2CentY, inv2Rad, bigCent2Y, midLineY, edgeLen);
     blah.push(newPtList);
   }
@@ -524,23 +537,36 @@ function fill2024() {
     blah[i].push(blah[i][30]-blah[i][28]); // 31 gridAngTot
     blah[i].push((blah[i][18]+blah[i][14]-2+blah[i][11])/2); // 32 gridRows
   
-    if (blah[i][19] != 1) {
+    if (blah[i][19] === 0) {
       blah[i][22]= multiplier*myMult-Math.floor(multiplier*myMult); //22 growDecimal
       blah[i][23]=Math.floor((blah[i][32]-1)*blah[i][22])+1; //23 7gon place
-      blah[i][32] += 0.5  - blah[i][19]*(blah[i][26]+0.5)/4; // fix 32 grid rows when growing
+      blah[i][32] += 0.5; // fix 32 grid rows when growing
       multiplier++;
+    }
+
+    if (blah[i][19] ===2) {
+      blah[i][22]= multiplier*myMult-Math.floor(multiplier*myMult); //22 growDecimal
+      blah[i][23]=Math.floor((blah[i][32]-1)*blah[i][22])+1; //23 7gon place
+      blah[i][32] += 0.5  - (blah[i][26]+0.5)/2; // fix 32 grid rows when growing
+      multiplier++;
+    }
+
+    if (blah[i][19] === 2 && blah[i][18] === 1.5) {
+      blah[i][32] += .5 ; // fix 32 grid rows when growing
     }
 
     blah[i].push(blah[i][31]/blah[i][32]); // 33 angPerGrid
     blah[i].push((blah[i][17]-blah[i][16])/blah[i][32]); // 34 fixRadPerGrid
 
-    if (blah[i][19] === 2) {
-      blah[i][32] += 0.25*blah[i][19] ; // fix 32 grid rows when growing
+    if (blah[i][19] === 2 && blah[i][18] === 0.5) {
+      blah[i][32] += .5 ; // fix 32 grid rows when growing
     }
 
-if (i>0 && blah[i-1][19]===0) {
-  blah[i][32]= Math.floor((blah[i-1][23]*2+blah[i-1][26]-blah[i][26])/2);
-}
+    if (i>0 && blah[i-1][19]===0) {
+      blah[i][32]= Math.floor((blah[i-1][23]*2+blah[i-1][26]-blah[i][26])/2);
+    }
+
+//if (i===blah.length-2) {blah[i][32]*=2; blah[i][33]*=.5; blah[i][34]*=.5;}
 
     for (let j = 0; j<= blah[i][32]; j++) {
       let nextGrid = [];
@@ -548,17 +574,20 @@ if (i>0 && blah[i-1][19]===0) {
       nextGrid.push(blah[i][26]+2*j);
       nextGrid.push(Math.cos(blah[i][28]+j*blah[i][33])*(blah[i][6]+j*edgeLen*blah[i][34])+blah[i][4]);
       nextGrid.push(Math.sin(blah[i][28]+j*blah[i][33])*(blah[i][6]+j*edgeLen*blah[i][34])+blah[i][5]);
-      pointList.push([nextGrid[2],nextGrid[3],-1]);
+  //    pointList.push([nextGrid[2],nextGrid[3],-1]);
       let hepta = 1;
+//if (i===blah.length-2) {hepta = 0;}
       if (blah[i][19] === 0) { 
         if (blah[i][23]*2+blah[i][26] === nextGrid[1]) {
           hepta = blah[i][19]; 
+//if (i===blah.length-2) {hepta = 0;}
           j -= 0.5;
         }
       }
       if (blah[i][19] === 2) { 
         if (blah[i][23]*2+blah[i][26] === nextGrid[1]) {
           hepta = blah[i][19]; 
+//if (i===blah.length-2) {hepta = 0;}
           for (let k = j+.5; k<= blah[i][32]; k++) {
             nextGrid.push(hepta);
             gridLine.push(nextGrid);
@@ -566,8 +595,9 @@ if (i>0 && blah[i-1][19]===0) {
             nextGrid.push(blah[i][26]+2*k);
             nextGrid.push(Math.cos(blah[i][28]+k*blah[i][33])*(blah[i][6]+k*edgeLen*blah[i][34])+blah[i][4]);
             nextGrid.push(Math.sin(blah[i][28]+k*blah[i][33])*(blah[i][6]+k*edgeLen*blah[i][34])+blah[i][5]);
-            pointList.push([nextGrid[2],nextGrid[3],-1]);
+ //           pointList.push([nextGrid[2],nextGrid[3],-1]);
             hepta = 1;
+//if (i===blah.length-2) {hepta = 0;}
           } // end k loop
           nextGrid.push(hepta);
           gridLine.push(nextGrid);
@@ -584,13 +614,222 @@ if (i>0 && blah[i-1][19]===0) {
     gridList.push(gridLine);
   } // end i loop
 
+//  goSaveFill(gridList);
+
   makeDiamond(gridList);
 
+//  goSaveFill(gridList);
+//  goSaveFill(blah);
+} // end fill2024()
+
+function ob() {
+// this one is a good curve for tip
+  Ax = 20000;
+  By = 20000;
+
+  let curveNumSides = 1248;
+  let curveRadius = 398.72;
+  let curveY = 409.11;
+
+  let newPoly = [];
+  for (let i = 938; i<990;i++) {
+    let newAngle = i/curveNumSides*2*Math.PI;
+    let newX = (Math.cos(newAngle)*curveRadius);
+    let newY = (Math.sin(newAngle)*curveRadius)+curveY;
+    newPoly.push([pointList.length,[0,0]]);
+    pointList.push([newX,newY,-1]); // -1 locked, 1 unlocked
+  }
+  polyList.push(newPoly);
+  // and the straight line
+  for (let x = -569.92+400.46; x<570+400.46; x+=569.92*2/571) {
+    pointList.push([x,0,-1]);
+  }
+
+} 
+
+
+function fillOb() {
+// we will find the arcs to a horizontal line
+  Ax = 20000;
+  By = 20000;
+  let blah = [];
+  let edgeLen = 2;
+  let gridList = [];
+  let curveNumSides = 1248;
+  let curveRadius = 398.72;
+  let curveY = 409.11;
+  let startI = 938.5;
+  let convex = 1; // 1 or -1
+  let bigStart = 1.5; // .5 or 1.5
+
+  for (let i = startI; i<988;i++) {
+    let newAngle = i/curveNumSides*2*Math.PI;
+    let bigPtX = (Math.cos(newAngle)*curveRadius); //0
+    let bigPtY = (Math.sin(newAngle)*curveRadius+curveY); //1
+    let arcCentX = bigPtX-(curveY-bigPtY)*bigPtY/bigPtX; //4
+    let arcCentY = 0; // 5
+    let arcRad = Math.sqrt((arcCentX-bigPtX)**2 + (arcCentY-bigPtY)**2); //6
+    let lilPtX = arcCentX+convex*arcRad;  //2
+    let lilPtY = 0; //3
+    let arcAng1 = Math.atan2(bigPtY-arcCentY,bigPtX-arcCentX); //7
+    let arcAng2 = Math.atan2(lilPtY-arcCentY,lilPtX-arcCentX); //8
+    let arcDist = (-arcAng2+arcAng1)*arcRad; //9 (switch order as needed if convex or concave?)
+    let arcNumRows = arcDist/Math.sqrt(3)/edgeLen; //10
+    let arcRoundRows = Math.round(arcNumRows); //11
+    let arcRowParity = arcRoundRows%2; // 12
+    let bigIndex = i-startI+bigStart; //13
+    let bigParity = bigIndex%2; //14
+    let bothParity = (bigParity+arcRowParity)%2; //15
+    let lilIndex = convex*(lilPtX-(-569.92+400.46))/(569.92*2/571); //16
+    let pickLilIndex = Math.round((lilIndex+1-bothParity)/2)*2-1+bothParity; //17
+    let lilParity = pickLilIndex%2; //18
+    blah.push([bigPtX,bigPtY,lilPtX,lilPtY,arcCentX,arcCentY,arcRad,arcAng1,arcAng2,arcDist,arcNumRows,            arcRoundRows,arcRowParity,bigIndex,bigParity,bothParity,lilIndex,pickLilIndex,lilParity,1,0,0,0,0]);
+
+  }
+
+//goSaveFill(blah);
+//blah = nextBlah;
+//alert(blah);
+
+  for (let i = 0;i<blah.length-1;i++) {
+    if (blah[i+1][17]<blah[i][17]) {
+      let switching = blah[i][17];
+//      blah[i][17] = blah[i+1][17];
+//      blah[i+1][17] = switching;
+    }
+  }
+
+  for (let i = 0;i<blah.length-1;i++) {
+   // [19] usually stays 1. If 0, big increases. if 2, lil increases.
+    blah[i][19]=blah[i+1][17]-blah[i][17]; // 19 grow
+    if (i<2) {blah[i][19]=1}
+
+//   if (blah[i][19]===0) {blah[i-1][20]=1} // 20 Big (unused)
+//    if (blah[i][19]===2) {blah[i-1][21]=1} // 21 Lil (unused)
+  }
+  let myMult = (Math.sqrt(5)+1)/2-1;
+  let multiplier = 1;
+  for (let i = 0;i<blah.length-1;i++) {
+//    if (blah[i][20]+blah[i][21]>0) {
+    let gridLine = [];
+    blah[i].push(blah[i][7]-blah[i][8]); // 24 arcAngTot
+    blah[i].push(blah[i][24]/blah[i][10]); // 25 angPerRow
+    if (blah[i][14]===1.5) {blah[i].push(-0.5)}
+      else {blah[i].push(0.5)} // 26 startGridCoord
+    blah[i].push(-blah[i][26]*blah[i][25]); // 27 startAdd
+    blah[i].push(blah[i][27]+blah[i][7]); // 28 gridStart
+    if (blah[i][18]===1.5) {blah[i].push(-0.5*blah[i][25])}
+      else {blah[i].push(0.5*blah[i][25])} // 29 endAdd
+    blah[i].push(blah[i][29]+blah[i][8]); // 30 gridEnd
+    blah[i].push(blah[i][30]-blah[i][28]); // 31 gridAngTot
+    blah[i].push((blah[i][18]+blah[i][14]-2+blah[i][11])/2); // 32 gridRows
+  
+    if (blah[i][19] === 0) {
+      blah[i][22]= multiplier*myMult-Math.floor(multiplier*myMult); //22 growDecimal
+      blah[i][23]=Math.floor((blah[i][32]-1)*blah[i][22])+1; //23 7gon place
+      blah[i][32] += 0.5; // fix 32 grid rows when growing
+      multiplier++;
+    }
+
+    if (blah[i][19] ===2) {
+      blah[i][22]= multiplier*myMult-Math.floor(multiplier*myMult); //22 growDecimal
+      blah[i][23]=Math.floor((blah[i][32]-1)*blah[i][22])+1; //23 7gon place
+  //    blah[i][32] += 0.5  - (blah[i][26]+0.5)/2; // fix 32 grid rows when growing
+      multiplier++;
+    }
+
+    if (blah[i][19] ===2) {
+      blah[i][32] += 0.5;
+    }
+
+    if (blah[i][19] ===2) {
+      blah[i][32] -= (blah[i][26]+0.5)/2;
+    }
+
+    if (blah[i][19] === 2 && blah[i][18] === 0.5) {
+      blah[i][32] += .5 ; // fix 32 grid rows when growing
+    }
+
+    if (blah[i][19] === 2 && blah[i][18] === 0.5 && blah[i][26] === -.5) {
+      blah[i][32] -= 1 ; // fix 32 grid rows when growing
+    }
+
+
+
+    blah[i].push(blah[i][31]/blah[i][32]); // 33 angPerGrid
+    blah[i].push((blah[i][17]-blah[i][16])/blah[i][32]); // 34 fixRadPerGrid
+
+    if (blah[i][19] === 2 && blah[i][18] === 1.5) {
+//      blah[i][32] += .5 ; // fix 32 grid rows when growing
+    }
+
+    if (blah[i][19] === 2 && blah[i][18] === 0.5) {
+      blah[i][32] += .5 ; // fix 32 grid rows when growing
+    }
+
+
+
+    if (i>0 && blah[i-1][19]===0) {
+      blah[i][32]= Math.floor((blah[i-1][23]*2+blah[i-1][26]-blah[i][26])/2);
+    }
+
+//if (i===blah.length-2) {blah[i][32]*=2; blah[i][33]*=.5; blah[i][34]*=.5;}
+
+    for (let j = 0; j<= blah[i][32]; j++) {
+      let nextGrid = [];
+      nextGrid.push(blah[i][13]);
+      nextGrid.push(blah[i][26]+2*j);
+      nextGrid.push(Math.cos(blah[i][28]+j*blah[i][33])*(blah[i][6]+j*edgeLen*blah[i][34])+blah[i][4]);
+      nextGrid.push(Math.sin(blah[i][28]+j*blah[i][33])*(blah[i][6]+j*edgeLen*blah[i][34])+blah[i][5]);
+      pointList.push([nextGrid[2],nextGrid[3],-1]);
+      let hepta = 1;
+//if (i===blah.length-2) {hepta = 0;}
+      if (blah[i][19] === 0) { 
+        if (blah[i][23]*2+blah[i][26] === nextGrid[1]) {
+          hepta = blah[i][19]; 
+//if (i===blah.length-2) {hepta = 0;}
+          j -= 0.5;
+        }
+      }
+      if (blah[i][19] === 2) { 
+        if (blah[i][23]*2+blah[i][26] === nextGrid[1]) {
+          hepta = blah[i][19]; 
+//if (i===blah.length-2) {hepta = 0;}
+ //         blah[i][6] += edgeLen;
+          for (let k = j+.5; k<= blah[i][32]; k++) {
+            nextGrid.push(hepta);
+            gridLine.push(nextGrid);
+            nextGrid = [blah[i][13]];
+            nextGrid.push(blah[i][26]+2*k);
+            nextGrid.push(Math.cos(blah[i][28]+k*blah[i][33])*(blah[i][6]+k*edgeLen*blah[i][34])+blah[i][4]);
+            nextGrid.push(Math.sin(blah[i][28]+k*blah[i][33])*(blah[i][6]+k*edgeLen*blah[i][34])+blah[i][5]);
+           pointList.push([nextGrid[2],nextGrid[3],-1]);
+            hepta = 1;
+//if (i===blah.length-2) {hepta = 0;}
+          } // end k loop
+          nextGrid.push(hepta);
+          gridLine.push(nextGrid);
+          gridList.push(gridLine);
+          gridLine = []; 
+          blah[i][6] += edgeLen;
+          continue;
+    //      j -= 0.5;
+        }
+      }
+      nextGrid.push(hepta);
+      gridLine.push(nextGrid);
+    } // end j loop
+    gridList.push(gridLine);
+  } // end i loop
 
 //  goSaveFill(gridList);
 //  goSaveFill(blah);
 
-}
+  makeDiamond(gridList,convex);
+//alert("done");
+
+} // end fillOb()
+
 
 function findNewPts(i, inv2CentY, inv2Rad, bigCent2Y, midLineY, edgeLen) {
 
@@ -655,6 +894,28 @@ function goSaveFill(blah) {
   txtToFile(asOutput,thisFile,"txt");
 }
 
+function goLoadFill() {
+  var c = document.getElementById("myCanvas");
+  var context = c.getContext("2d");
+
+  const file = document.getElementById("loadFill").files[0];
+  const reader = new FileReader();
+
+  reader.addEventListener("load", function () {
+    var lines = reader.result.split(/\r\n|\n/);
+    init();
+    var curLen = lines.length-1;
+    nextBlah = [];
+    for (i = 1;i<curLen;i++) {
+      var coords = lines[i].split(",");
+      newBlah.push(parseFloat(coords[0]));
+    }
+  },false);
+
+  if (file) {
+    reader.readAsText(file);
+  }
+} // end goLoadFill()
 
 
 
@@ -744,9 +1005,35 @@ function reflY() {
   draw();
 }
 
+function trans() {
+  let myX = 2*parseFloat(prompt("What is the X translate?"));
+  let myY = 2*parseFloat(prompt("What is the Y translate?"));
+  pointList.forEach(function(nextPt) {
+    nextPt[0] += myX;
+    nextPt[1] += myY;
+  });
+  draw();
+}
+
 function isEven(num) {
   let isEven = (num/2 === Math.floor(num/2));
   return(isEven);
+}
+
+function setZoom() {
+alert(4);
+  sized = parseFloat(document.getElementById("zoom").value);
+  draw();
+}
+
+function setXOffset() {
+  xOffset = parseFloat(document.getElementById("xOffset").value);
+  draw();
+}
+
+function setYOffset() {
+  yOffset = parseFloat(document.getElementById("yOffset").value);
+  draw();
 }
 
 function makeOctLine() {
@@ -813,13 +1100,13 @@ xOffset -= 50;
 
 function goUp() {
 //  if (yOffset < h-10) {yOffset += 10;}
-yOffset += 16;
+yOffset += 50;
   draw();
 }
 
 function goDown() {
 //  if (yOffset>=10) {yOffset -= 10;}
-yOffset -= 16;
+yOffset -= 50;
   draw();
 }
 
@@ -866,16 +1153,20 @@ function goHex() {
   mode = 5;
 }
 
-function goLeft7() {
+function goPentL() {
   mode = 6;
 }
 
-function goRight7() {
+function goPentR() {
   mode = 7;
 }
 
-function goSel() {
+function goHept() {
   mode = 8;
+}
+
+function goPentTop() {
+  mode = 9;
 }
 
 function goReg() {
@@ -1315,7 +1606,7 @@ function mouseMoved(event) {
   posi = [canvasX/sized+xOffset,canvasY/sized+yOffset,1];
   let pointName = JSON.stringify(findPoint(posi));
   if (pointName === "[-1]") {
-    document.getElementById("coords").value ="("+canvasX/sized+xOffset+"," + canvasY/sized+yOffset+")";
+    document.getElementById("coords").value ="("+(canvasX/sized+xOffset)+"," + (canvasY/sized+yOffset)+")";
   } else {
     let nowPtMap = JSON.parse(pointName);
     let nowPtX = Math.round(pointList[nowPtMap[0]][0]*100)/100;
@@ -1362,6 +1653,11 @@ function mouseClicked(event) {
   if (mode ===1) {erasePoint(ptMap);}
   if (mode ===2) {lockPoint(ptMap);}
   if (mode ===3) {bombPoint(ptMap);}
+  if (mode ===5) {hexPoint(ptMap);}
+  if (mode ===6) {pentLPoint(ptMap);}
+  if (mode ===7) {pentRPoint(ptMap);}
+  if (mode ===8) {heptPoint(ptMap);}
+  if (mode ===9) {pentTopPoint(ptMap);}
   draw();
 }
 
@@ -1461,7 +1757,184 @@ function drawPoint(ptMap) {
   else {
     curPoly.push(ptMap); 
     }
+
 }
+
+function hexPoint(ptMap) {
+//add new point
+  if (ptMap[0]<0) { 
+    ptMap= [pointList.length,[0,0]]; // crashes if you add lock...?
+    pointList.push(posi); 
+  }   
+  curPoly.push(ptMap); 
+//if this is third point. complete shapes.
+  if (curPoly.length===3) {
+    var rawPt0 = mapPt(pointList[curPoly[0][0]],curPoly[0][1]);
+    var rawPt1 = mapPt(pointList[curPoly[1][0]],curPoly[1][1]);
+    var rawPt2 = mapPt(pointList[curPoly[2][0]],curPoly[2][1]);
+    let mid0 = findPoint([(rawPt0[0]+rawPt1[0])/2,(rawPt0[1]+rawPt1[1])/2]);
+    if (mid0<0) {
+      pointList.push([(rawPt0[0]+rawPt1[0])/2,(rawPt0[1]+rawPt1[1])/2,1]);
+      mid0= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    }
+    let mid1 = findPoint([(rawPt1[0]+rawPt2[0])/2,(rawPt1[1]+rawPt2[1])/2]);
+    if (mid1<0) {
+      pointList.push([(rawPt1[0]+rawPt2[0])/2,(rawPt1[1]+rawPt2[1])/2,1]);
+      mid1= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    }
+    let myMid = [(rawPt0[0]+rawPt2[0])/2,(rawPt0[1]+rawPt2[1])/2];
+    let midXDiff = rawPt0[0]-myMid[0];
+    let midYDiff = rawPt0[1]-myMid[1];
+    let vert3 = [myMid[0]+0.577*midYDiff,myMid[1]-0.577*midXDiff];
+    let mid2 = findPoint([(rawPt2[0]+vert3[0])/2,(rawPt2[1]+vert3[1])/2]);
+    if (mid2<0) {
+      pointList.push([(rawPt2[0]+vert3[0])/2,(rawPt2[1]+vert3[1])/2,1]);
+      mid2= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    }
+    let mid3 = findPoint([(rawPt0[0]+vert3[0])/2,(rawPt0[1]+vert3[1])/2]);
+    if (mid3<0) {
+      pointList.push([(rawPt0[0]+vert3[0])/2,(rawPt0[1]+vert3[1])/2,1]);
+      mid3= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    }
+    pointList.push([myMid[0]+0.577*midYDiff,myMid[1]-0.577*midXDiff,1]);
+    vert3= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    let newPoly = [];
+    newPoly.push(curPoly[0]);
+    newPoly.push(mid0);
+    newPoly.push(mid3);
+    polyList.push(JSON.parse(JSON.stringify(newPoly)));
+    newPoly = [];
+    newPoly.push(mid0);
+    newPoly.push(curPoly[1]);
+    newPoly.push(mid1);
+    newPoly.push(mid2);
+    newPoly.push(vert3);
+    newPoly.push(mid3);
+    polyList.push(JSON.parse(JSON.stringify(newPoly)));
+    newPoly = [];
+    newPoly.push(mid1);
+    newPoly.push(curPoly[2]);
+    newPoly.push(mid2);
+    polyList.push(JSON.parse(JSON.stringify(newPoly)));
+    curPoly = [];
+  }
+} // end hexPoint()
+
+
+function heptPoint(ptMap) {
+//add new point
+  if (ptMap[0]<0) { 
+    ptMap= [pointList.length,[0,0]]; // crashes if you add lock...?
+    pointList.push(posi); 
+  }   
+  curPoly.push(ptMap); 
+//if this is third point. complete shapes.
+  if (curPoly.length===3) {
+    var rawPt0 = mapPt(pointList[curPoly[0][0]],curPoly[0][1]);
+    var rawPt1 = mapPt(pointList[curPoly[1][0]],curPoly[1][1]);
+    var rawPt2 = mapPt(pointList[curPoly[2][0]],curPoly[2][1]);
+    let mid0 = findPoint([(rawPt0[0]+rawPt1[0])/2,(rawPt0[1]+rawPt1[1])/2]);
+    if (mid0<0) {
+      pointList.push([(rawPt0[0]+rawPt1[0])/2,(rawPt0[1]+rawPt1[1])/2,1]);
+      mid0= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    }
+    let mid1 = findPoint([(rawPt1[0]+rawPt2[0])/2,(rawPt1[1]+rawPt2[1])/2]);
+    if (mid1<0) {
+      pointList.push([(rawPt1[0]+rawPt2[0])/2,(rawPt1[1]+rawPt2[1])/2,1]);
+      mid1= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    }
+    let myMid = [(rawPt0[0]+rawPt2[0])/2,(rawPt0[1]+rawPt2[1])/2];
+    let midXDiff = rawPt0[0]-myMid[0];
+    let midYDiff = rawPt0[1]-myMid[1];
+    let vertTop = [myMid[0]+0.6*midYDiff,myMid[1]-0.6*midXDiff];
+    let vert3 = [vertTop[0]*.8+rawPt2[0]*.2,vertTop[1]*.8+rawPt2[1]*.2];
+    let vert4 = [vertTop[0]*.8+rawPt0[0]*.2,vertTop[1]*.8+rawPt0[1]*.2];
+    let mid2 = findPoint([(rawPt2[0]+vert3[0])/2,(rawPt2[1]+vert3[1])/2]);
+    if (mid2<0) {
+      pointList.push([(rawPt2[0]+vert3[0])/2,(rawPt2[1]+vert3[1])/2,1]);
+      mid2= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    }
+    let mid3 = findPoint([(rawPt0[0]+vert4[0])/2,(rawPt0[1]+vert4[1])/2]);
+    if (mid3<0) {
+      pointList.push([(rawPt0[0]+vert4[0])/2,(rawPt0[1]+vert4[1])/2,1]);
+      mid3= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    }
+    pointList.push([vertTop[0]*.8+rawPt2[0]*.2,vertTop[1]*.8+rawPt2[1]*.2,1]);
+    vert3= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    pointList.push([vertTop[0]*.8+rawPt0[0]*.2,vertTop[1]*.8+rawPt0[1]*.2,1]);
+    vert4= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    let newPoly = [];
+    newPoly.push(curPoly[0]);
+    newPoly.push(mid0);
+    newPoly.push(mid3);
+    polyList.push(JSON.parse(JSON.stringify(newPoly)));
+    newPoly = [];
+    newPoly.push(mid0);
+    newPoly.push(curPoly[1]);
+    newPoly.push(mid1);
+    newPoly.push(mid2);
+    newPoly.push(vert3);
+    newPoly.push(vert4);
+    newPoly.push(mid3);
+    polyList.push(JSON.parse(JSON.stringify(newPoly)));
+    newPoly = [];
+    newPoly.push(mid1);
+    newPoly.push(curPoly[2]);
+    newPoly.push(mid2);
+    polyList.push(JSON.parse(JSON.stringify(newPoly)));
+    curPoly = [];
+  }
+} // end heptPoint()
+
+function pentTopPoint(ptMap) {
+//add new point
+  if (ptMap[0]<0) { 
+    ptMap= [pointList.length,[0,0]]; // crashes if you add lock...?
+    pointList.push(posi); 
+  }   
+  curPoly.push(ptMap); 
+//if this is third point. complete shapes.
+  if (curPoly.length===3) {
+    var rawPt0 = mapPt(pointList[curPoly[0][0]],curPoly[0][1]);
+    var rawPt1 = mapPt(pointList[curPoly[1][0]],curPoly[1][1]);
+    var rawPt2 = mapPt(pointList[curPoly[2][0]],curPoly[2][1]);
+    let mid0 = findPoint([(rawPt0[0]+rawPt1[0])/2,(rawPt0[1]+rawPt1[1])/2]);
+    if (mid0<0) {
+      pointList.push([(rawPt0[0]+rawPt1[0])/2,(rawPt0[1]+rawPt1[1])/2,1]);
+      mid0= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    }
+    let mid1 = findPoint([(rawPt1[0]+rawPt2[0])/2,(rawPt1[1]+rawPt2[1])/2]);
+    if (mid1<0) {
+      pointList.push([(rawPt1[0]+rawPt2[0])/2,(rawPt1[1]+rawPt2[1])/2,1]);
+      mid1= [pointList.length-1,[0,0]]; // crashes if you add lock...?
+    }
+
+    pointList.push([(rawPt0[0]+2*rawPt2[0])/3,(rawPt0[1]+2*rawPt2[1])/3,1]);
+    let top1 = [pointList.length-1,[0,0]]; // crashes if you add lock...?
+
+    pointList.push([(2*rawPt0[0]+rawPt2[0])/3,(2*rawPt0[1]+rawPt2[1])/3,1]);
+    let top2 = [pointList.length-1,[0,0]]; // crashes if you add lock...?
+
+    let newPoly = [];
+    newPoly.push(curPoly[0]);
+    newPoly.push(mid0);
+    newPoly.push(top2);
+    polyList.push(JSON.parse(JSON.stringify(newPoly)));
+    newPoly = [];
+    newPoly.push(mid0);
+    newPoly.push(curPoly[1]);
+    newPoly.push(mid1);
+    newPoly.push(top1);
+    newPoly.push(top2);
+    polyList.push(JSON.parse(JSON.stringify(newPoly)));
+    newPoly = [];
+    newPoly.push(mid1);
+    newPoly.push(curPoly[2]);
+    newPoly.push(top1);
+    polyList.push(JSON.parse(JSON.stringify(newPoly)));
+    curPoly = [];
+  }
+} // end pentTopPoint()
 
 function lockPoint(ptMap) {
   if (ptMap[0] >-1) {
@@ -1614,6 +2087,39 @@ function mergeDropDup(oldPtLen,oldPolyLen) {
  // alert(JSON.stringify([pointList,polyList]));
 }
 
+function newMerge() {
+// this will merge all points.
+  let joinDist = minEdgeLen()/3;
+  let vectDenom = Ax*By-Ay*Bx;
+  for (let i = 0;i<pointList.length;i++) {
+    for (let j = i+1;j<pointList.length;j++) {
+      let xDiff = pointList[i][0]-pointList[j][0];
+      let yDiff = pointList[i][1]-pointList[j][1];
+      let Acoord = (xDiff*By-yDiff*Bx)/vectDenom;
+      let Bcoord = (Ax*yDiff-Ay*xDiff)/vectDenom;
+      let roundA = Math.round(Acoord);
+      let roundB = Math.round(Bcoord);
+      let absXDiff = Math.abs(xDiff - roundA*Ax-roundB*Bx);
+      let absYDiff = Math.abs(yDiff - roundA*Ay-roundB*By); 
+//alert([i,j,absXDiff+absYDiff,joinDist]);
+      if (absXDiff+absYDiff<joinDist) {
+//alert(JSON.stringify([pointList[i],pointList[j],roundA,roundB]));
+        for (let k = 0;k<polyList.length;k++) {
+          polyList[k].forEach(function(nextPt) {
+            if (nextPt[0] === j) {
+              nextPt[0] = i;
+              nextPt[1][0] = nextPt[1][0]-roundA;
+              nextPt[1][1] = nextPt[1][1]-roundB;
+            } // end if 
+          }); // end polyList loop
+        } // end k loop
+      } // end if
+    } // end j loop
+  } // end i loop
+  dropUnused(); // keep locked points
+//  dropUnused2(); // drop all lone points
+}
+
 function dropDup() {
   let joinDist = minEdgeLen()/3;
   let vectDenom = Ax*By-Ay*Bx;
@@ -1737,7 +2243,45 @@ function dropUnused() {
   draw();
 }
 
+function unlockAll() {
+  pointList.forEach(function(nextPt) {
+    nextPt[2] = 1;
+  });
+}
+
+function dropUnused2() {
+// drop unused points
+  let usedPts = [];
+  for (let i = 0; i<pointList.length; i++) {
+    usedPts.push(-1);
+//    if (pointList[i][2] === -1) {usedPts[i] = 1} // Don't drop locked points
+  }
+  polyList.forEach(function(myPoly) {
+    myPoly.forEach(function(myPtMap) {
+      usedPts[myPtMap[0]] = 1;
+    });
+  });
+  let newPtList = [];
+  for (let i = 0; i<usedPts.length; i++) {
+    if (usedPts[i]>-1) {
+      usedPts[i] = newPtList.length;
+      newPtList.push(pointList[i]);
+    }
+  }
+  polyList.forEach(function(myPoly) {
+    myPoly.forEach(function(myPtMap) {
+      myPtMap[0] = usedPts[myPtMap[0]];
+    });
+  });
+  pointList = JSON.parse(JSON.stringify(newPtList));
+  draw();
+}
+
+
 function draw() {
+document.getElementById("zoom").value = sized;
+document.getElementById("xOffset").value = xOffset;
+document.getElementById("yOffset").value = yOffset;
   var c = document.getElementById("myCanvas");
   var context = c.getContext("2d");
   context.rect(0,0,c.width,c.height);

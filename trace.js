@@ -714,7 +714,7 @@ function mouseMoved(event) {
   posi = [canvasX/sized+xOffset,canvasY/sized+yOffset,1];
   let pointName = JSON.stringify(findPoint(posi));
   if (pointName === "[-1]") {
-    document.getElementById("coords").value ="("+canvasX/sized+xOffset+"," + canvasY/sized+yOffset+")";
+    document.getElementById("coords").value ="("+(canvasX/sized+xOffset)+"," + (canvasY/sized+yOffset)+")";
   } else {
     let nowPtMap = JSON.parse(pointName);
     let nowPtX = Math.round(pointList[nowPtMap[0]][0]*100)/100;
