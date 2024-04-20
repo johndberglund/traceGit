@@ -2033,7 +2033,10 @@ function mergeMyTiling() {
       let oldPtLen = pointList.length;
       let oldPolyLen = polyList.length;
       mergeAdd(oldPtLen);
-      mergeDropDup(oldPtLen,oldPolyLen);
+ //     mergeDropDup(oldPtLen,oldPolyLen);
+      newMerge();
+      newPointList = [];
+      newPolyList = [];
       draw();
     } else {
       alert("We can only merge if vectors match.");

@@ -959,8 +959,10 @@ function mergeMyTiling() {
       let oldPtLen = pointList.length;
       let oldPolyLen = polyList.length;
       mergeAdd(oldPtLen);
-      mergeDropDup(oldPtLen,oldPolyLen);
-      draw();
+ //     mergeDropDup(oldPtLen,oldPolyLen);
+      newMerge();
+      newPointList = [];
+      newPolyList = [];
     } else {
       alert("We can only merge if vectors match.");
     }
