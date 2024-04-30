@@ -1021,7 +1021,6 @@ function isEven(num) {
 }
 
 function setZoom() {
-alert(4);
   sized = parseFloat(document.getElementById("zoom").value);
   draw();
 }
@@ -2040,6 +2039,8 @@ function mergeMyTiling() {
       draw();
     } else {
       alert("We can only merge if vectors match.");
+      newPointList = [];
+      newPolyList = [];
     }
   },false);
 
