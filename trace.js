@@ -976,6 +976,7 @@ function mergeMyTiling() {
       }
     }
     if (newAx === Ax && newAy === Ay && newBx === Bx && newBy === By) {
+
       let oldPtLen = pointList.length;
       let oldPolyLen = polyList.length;
       mergeAdd(oldPtLen);
@@ -983,8 +984,12 @@ function mergeMyTiling() {
       newMerge();
       newPointList = [];
       newPolyList = [];
+
+      draw();
     } else {
       alert("We can only merge if vectors match.");
+      newPointList = [];
+      newPolyList = [];
     }
   },false);
 
@@ -1002,6 +1007,39 @@ function mergeAdd(oldPtLen) {
   });
   polyList = polyList.concat(newPolyList);
 }
+
+function newMerge() {
+// this will merge all points.
+  let joinDist = minEdgeLen()/3;
+  let vectDenom = Ax*By-Ay*Bx;
+  for (let i = 0;i<pointList.length;i++) {
+    for (let j = i+1;j<pointList.length;j++) {
+      let xDiff = pointList[i][0]-pointList[j][0];
+      let yDiff = pointList[i][1]-pointList[j][1];
+      let Acoord = (xDiff*By-yDiff*Bx)/vectDenom;
+      let Bcoord = (Ax*yDiff-Ay*xDiff)/vectDenom;
+      let roundA = Math.round(Acoord);
+      let roundB = Math.round(Bcoord);
+      let absXDiff = Math.abs(xDiff - roundA*Ax-roundB*Bx);
+      let absYDiff = Math.abs(yDiff - roundA*Ay-roundB*By); 
+//alert([i,j,absXDiff+absYDiff,joinDist]);
+      if (absXDiff+absYDiff<joinDist) {
+//alert(JSON.stringify([pointList[i],pointList[j],roundA,roundB]));
+        for (let k = 0;k<polyList.length;k++) {
+          polyList[k].forEach(function(nextPt) {
+            if (nextPt[0] === j) {
+              nextPt[0] = i;
+              nextPt[1][0] = nextPt[1][0]-roundA;
+              nextPt[1][1] = nextPt[1][1]-roundB;
+            } // end if 
+          }); // end polyList loop
+        } // end k loop
+      } // end if
+    } // end j loop
+  } // end i loop
+  dropUnused(); // keep locked points
+//  dropUnused2(); // drop all lone points
+} // end newMerge()
 
 function mergeDropDup(oldPtLen,oldPolyLen) {
   let joinDist = minEdgeLen()/4;
