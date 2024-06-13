@@ -206,6 +206,15 @@ function reflY() {
   draw();
 }
 
+function trans() {
+  let myX = 2*parseFloat(prompt("What is the X translate?"));
+  let myY = 2*parseFloat(prompt("What is the Y translate?"));
+  pointList.forEach(function(nextPt) {
+    nextPt[0] += myX;
+    nextPt[1] += myY;
+  });
+  draw();
+}
 
 function getMode() {
 var getMode = document.querySelector('input[name="mode"]:checked');   
@@ -717,8 +726,8 @@ function mouseMoved(event) {
     document.getElementById("coords").value ="("+(canvasX/sized+xOffset)+"," + (canvasY/sized+yOffset)+")";
   } else {
     let nowPtMap = JSON.parse(pointName);
-    let nowPtX = Math.round(pointList[nowPtMap[0]][0]*100)/100;
-    let nowPtY = Math.round(pointList[nowPtMap[0]][1]*100)/100;
+    let nowPtX = Math.round((pointList[nowPtMap[0]][0]+nowPtMap[1][0]*Ax+nowPtMap[1][1]*Bx)*100)/100;
+    let nowPtY = Math.round((pointList[nowPtMap[0]][1]+nowPtMap[1][0]*Ay+nowPtMap[1][1]*By)*100)/100;
     document.getElementById("coords").value=JSON.stringify(pointName)+" raw:"+nowPtX+","+nowPtY;
   }
 
@@ -853,6 +862,17 @@ function drawPoint(ptMap) {
   }
 //if we return to polygon starting point
   if (JSON.stringify(ptMap) === JSON.stringify(curPoly[0])) {
+    // make curPoly clockwise
+    var rawPoly = polyAddRaw(curPoly);
+    var areaSum = 0;
+    for (i=0;i<curPoly.length-1;i++) {
+      var nextAdder = (rawPoly[i+1][2][0]-rawPoly[i][2][0])*(rawPoly[i+1][2][1]+rawPoly[i][2][1]);
+      areaSum +=nextAdder;
+    }
+    areaSum += (rawPoly[0][2][0]-rawPoly[rawPoly.length-1][2][0])*
+       (rawPoly[0][2][1]+rawPoly[rawPoly.length-1][2][1]);
+    if (areaSum>0) {curPoly.reverse()}
+
     polyList.push(curPoly);
     curPoly = [];
     }
