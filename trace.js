@@ -174,8 +174,43 @@ xOffset = -10;
 
 } // end do2024
 
+function noTranslates() {
+  newPtList = [];
+  newPolyList = [];
+  polyList.forEach(function(nextPoly) {
+    var rawPoly = polyAddRaw(nextPoly);
+    newPolyList.push(rawPoly);
+    rawPoly.forEach(function(rawPt) {
+      if (JSON.stringify(rawPt[1]) != "[0,0]") {
+        var alreadyPt = newPtList.indexOf(rawPt);
+        if (alreadyPt < 0) {newPtList.push(rawPt)}
+      }
+    });
+  });
+  var oldPtLen = pointList.length;
+  newPtList.forEach(function(nextPt) {
+    var isLocked = pointList[nextPt[0]][2];
+    pointList.push([nextPt[2][0],nextPt[2][1],isLocked]);
+  });
+  polyList = [];
+  newPolyList.forEach(function(rawPoly) {
+    var betterPoly = [];
+    rawPoly.forEach(function(rawPt) {
+      if (JSON.stringify(rawPt[1]) != "[0,0]") 
+        {
+          var indexPt = newPtList.indexOf(rawPt);
+          betterPoly.push([indexPt+oldPtLen,[0,0]]);
+        } else {
+          betterPoly.push([rawPt[0],[rawPt[1][0],rawPt[1][1]]]);
+        }
+    });
+    polyList.push(betterPoly);
+  });
+} // end noTranslates()
+
 function rotOrig() {
   let myAngle = parseFloat(prompt("How many degrees to rotate?"));
+  noTranslates();
   pointList.forEach(function(nextPt) {
     let x = nextPt[0];
     let y = nextPt[1];
@@ -193,10 +228,17 @@ function rot180() {
     nextPt[0]= myX-nextPt[0];
     nextPt[1]= myY-nextPt[1];
   });
+  polyList.forEach(function(nextPoly) {
+    nextPoly.forEach(function(nextPt) {
+      nextPt[1][0] *= -1;
+      nextPt[1][1] *= -1;
+    });
+  });
   draw();
 }
 
 function reflY() {
+  noTranslates();
   pointList.forEach(function(nextPt) {
     nextPt[0]= -nextPt[0];
   });
