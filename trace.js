@@ -71,109 +71,6 @@ function resize() {
   draw(); }
 }
 
-function doOcts() {
-  Ax = 20000;
-  By = 20000;
-  let myOct = 735.72/61;
-  let octEdge = myOct/(1+Math.sqrt(2));
-  let oct1 = octEdge/Math.sqrt(2);
-  let oct2 = oct1 + octEdge;
-  let octBase = 30.5*myOct;
-  let octRad = Math.sqrt(octEdge*octEdge/4+myOct*myOct/4);
-  let octAngle = Math.PI/8;
-  for (let i = 0; i<17;i++) {
-    let cornerX = -octBase + i*myOct;
-    for (let j = 0;j<17-i;j++) {
-      let cornerY = octBase - j*myOct;
-      addRegPoly(4,cornerX,cornerY,oct1,0,-1);
-      addRegPoly(8,cornerX+myOct/2,cornerY-myOct/2,octRad,octAngle,-1);
-    } // end j loop
-  } // end i loop
-  cornerY = octBase;
-  for (let i = 17; i<29+17;i++) {
-    let cornerX = -octBase + i*myOct;
-    addRegPoly(4,cornerX,cornerY,oct1,0,-1);
-    addRegPoly(8,cornerX+myOct/2,cornerY-myOct/2,octRad,octAngle,-1);
-  }
-  dropDup();
-}
-
-function do192() {
-  Ax = 20000;
-  By = 20000;
-  addRegPoly(192,0,0,30.555*5,0.01636246,-1);
-  addRegPoly(112,0,50.8994*5,18.61233*5,0.0280499,-1);
-  addRegPoly(112,35.9913*5,35.9913*5,18.61233*5,0.0280499,-1);
-} // end do192
-
-function addPoly(myPtList) {
-  let newPoly = [];
-  myPtList.forEach(function(myNextPt) {
-    newPoly.push([pointList.length,[0,0]]);
-    pointList.push([myNextPt[0],myNextPt[1],myNextPt[2]]);
-  });
-  polyList.push(newPoly);
-}
-
-function addRegPoly(numSides,centX,centY,radius,startAngle,lock) {
-  let newPoly = [];
-  for (let i = 0; i<numSides;i++) {
-    let newAngle = i/numSides*2*Math.PI+startAngle;
-    let newX = (Math.cos(newAngle)*radius)+centX;
-    let newY = (Math.sin(newAngle)*radius)+centY;
-    newPoly.push([pointList.length,[0,0]]);
-    pointList.push([newX,newY,lock]); // -1 locked, 1 unlocked
-  }
-  polyList.push(newPoly);
-}
-
-function do2024() {
-alert(90);
-let xMult = 2;
-let yMult = 2;
-let yAdder = -220;
-sized = 12;
-yOffset = 180;
-xOffset = -10;
-  var c = document.getElementById("myCanvas");
-  var context = c.getContext("2d");
-  c.height = (window.innerHeight-135)*sized;
-  c.width = (window.innerWidth-195)*sized;
-
-  Ax = 20000;
-  By = 20000;
-  let newPoly = [];
-  for (let i = 253; i<507;i++) {
-    let newAngle = i/2024*2*Math.PI;
-    let newX = (Math.cos(newAngle)*322.13)*xMult;
-    let newY = (Math.sin(newAngle)*322.13+yAdder)*yMult;
-    pointList.push([newX,newY,-1]); // -1 since locked
-    newPoly.push([i-253,[0,0]]);
-  }
-  polyList.push(newPoly);
-
-  newPoly = [];
-  for (let i = 936; i<1171;i++) {
-    let newAngle = i/1248*2*Math.PI;
-    let newX = (Math.cos(newAngle)*199.36)*xMult;
-    let newY = (Math.sin(newAngle)*199.36 + 523.23+yAdder)*yMult;
-    pointList.push([newX,newY,-1]); // -1 since locked
-    newPoly.push([i-936+253+1,[0,0]]);
-  }
-  polyList.push(newPoly);
-
-  newPoly = [];
-  for (let i = 546; i<781;i++) {
-    let newAngle = i/1248*2*Math.PI;
-    let newX = (Math.cos(newAngle)*199.36 + 369.98)*xMult;
-    let newY = (Math.sin(newAngle)*199.36 + 369.98+yAdder)*yMult;
-    pointList.push([newX,newY,-1]); // -1 since locked
-    newPoly.push([i-546+253+234+2,[0,0]]);
-  }
-  polyList.push(newPoly);
-
-} // end do2024
-
 function noTranslates() {
   newPtList = [];
   newPolyList = [];
@@ -256,13 +153,6 @@ function trans() {
     nextPt[1] += myY;
   });
   draw();
-}
-
-function getMode() {
-var getMode = document.querySelector('input[name="mode"]:checked');   
-if(getMode != null) {   
-          alert("Selected radio button values is: " + getMode.value);  
-  }
 }
 
 function goLeft() {
