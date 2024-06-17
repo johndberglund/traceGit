@@ -52,6 +52,7 @@ function init() {
   d.style.maxWidth= window.innerWidth-170 + "px";
 //do2024();
 //do192();
+//  doOcts();
   draw();
 }
 
@@ -70,79 +71,88 @@ function resize() {
   draw(); }
 }
 
-function do192() {
-  Ax = 20000;
-  By = 20000;
-  addPoly(192,0,0,30.555*5,0.01636246,-1);
-  addPoly(112,0,50.8994*5,18.61233*5,0.0280499,-1);
-  addPoly(112,35.9913*5,35.9913*5,18.61233*5,0.0280499,-1);
-} // end do192
+function noTranslates() {
+  newPtList = [];
+  newPolyList = [];
+  polyList.forEach(function(nextPoly) {
+    var rawPoly = polyAddRaw(nextPoly);
+    newPolyList.push(rawPoly);
+    rawPoly.forEach(function(rawPt) {
+      if (JSON.stringify(rawPt[1]) != "[0,0]") {
+        var alreadyPt = newPtList.indexOf(rawPt);
+        if (alreadyPt < 0) {newPtList.push(rawPt)}
+      }
+    });
+  });
+  var oldPtLen = pointList.length;
+  newPtList.forEach(function(nextPt) {
+    var isLocked = pointList[nextPt[0]][2];
+    pointList.push([nextPt[2][0],nextPt[2][1],isLocked]);
+  });
+  polyList = [];
+  newPolyList.forEach(function(rawPoly) {
+    var betterPoly = [];
+    rawPoly.forEach(function(rawPt) {
+      if (JSON.stringify(rawPt[1]) != "[0,0]") 
+        {
+          var indexPt = newPtList.indexOf(rawPt);
+          betterPoly.push([indexPt+oldPtLen,[0,0]]);
+        } else {
+          betterPoly.push([rawPt[0],[rawPt[1][0],rawPt[1][1]]]);
+        }
+    });
+    polyList.push(betterPoly);
+  });
+} // end noTranslates()
 
-function addPoly(numSides,centX,centY,radius,startAngle,lock) {
-  let newPoly = [];
-  for (let i = 0; i<numSides;i++) {
-    let newAngle = i/numSides*2*Math.PI+startAngle;
-    let newX = (Math.cos(newAngle)*radius)+centX;
-    let newY = (Math.sin(newAngle)*radius)+centY;
-    newPoly.push([pointList.length,[0,0]]);
-    pointList.push([newX,newY,lock]); // -1 locked, 1 unlocked
-  }
-  polyList.push(newPoly);
+function rotOrig() {
+  let myAngle = parseFloat(prompt("How many degrees to rotate?"));
+  noTranslates();
+  pointList.forEach(function(nextPt) {
+    let x = nextPt[0];
+    let y = nextPt[1];
+    let ang = myAngle*Math.PI/180; 
+    nextPt[0]= Math.cos(ang)*x+Math.sin(ang)*y;
+    nextPt[1]= -Math.sin(ang)*x+Math.cos(ang)*y;
+  });
+  draw();
 }
 
-function do2024() {
-alert(90);
-let xMult = 2;
-let yMult = 2;
-let yAdder = -220;
-sized = 12;
-yOffset = 180;
-xOffset = -10;
-  var c = document.getElementById("myCanvas");
-  var context = c.getContext("2d");
-  c.height = (window.innerHeight-135)*sized;
-  c.width = (window.innerWidth-195)*sized;
+function rot180() {
+  let myX = 2*parseFloat(prompt("What is the X coordinate?"));
+  let myY = 2*parseFloat(prompt("What is the Y coordinate?"));
+  pointList.forEach(function(nextPt) {
+    nextPt[0]= myX-nextPt[0];
+    nextPt[1]= myY-nextPt[1];
+  });
+  polyList.forEach(function(nextPoly) {
+    nextPoly.forEach(function(nextPt) {
+      nextPt[1][0] *= -1;
+      nextPt[1][1] *= -1;
+    });
+  });
+  draw();
+}
 
-  Ax = 20000;
-  By = 20000;
-  let newPoly = [];
-  for (let i = 253; i<507;i++) {
-    let newAngle = i/2024*2*Math.PI;
-    let newX = (Math.cos(newAngle)*322.13)*xMult;
-    let newY = (Math.sin(newAngle)*322.13+yAdder)*yMult;
-    pointList.push([newX,newY,-1]); // -1 since locked
-    newPoly.push([i-253,[0,0]]);
-  }
-  polyList.push(newPoly);
+function reflY() {
+  noTranslates();
+  pointList.forEach(function(nextPt) {
+    nextPt[0]= -nextPt[0];
+  });
+  polyList.forEach(function(nextPoly) {
+    nextPoly.reverse();
+  });
+  draw();
+}
 
-  newPoly = [];
-  for (let i = 936; i<1171;i++) {
-    let newAngle = i/1248*2*Math.PI;
-    let newX = (Math.cos(newAngle)*199.36)*xMult;
-    let newY = (Math.sin(newAngle)*199.36 + 523.23+yAdder)*yMult;
-    pointList.push([newX,newY,-1]); // -1 since locked
-    newPoly.push([i-936+253+1,[0,0]]);
-  }
-  polyList.push(newPoly);
-
-  newPoly = [];
-  for (let i = 546; i<781;i++) {
-    let newAngle = i/1248*2*Math.PI;
-    let newX = (Math.cos(newAngle)*199.36 + 369.98)*xMult;
-    let newY = (Math.sin(newAngle)*199.36 + 369.98+yAdder)*yMult;
-    pointList.push([newX,newY,-1]); // -1 since locked
-    newPoly.push([i-546+253+234+2,[0,0]]);
-  }
-  polyList.push(newPoly);
-
-} // end do2024
-
-
-function getMode() {
-var getMode = document.querySelector('input[name="mode"]:checked');   
-if(getMode != null) {   
-          alert("Selected radio button values is: " + getMode.value);  
-  }
+function trans() {
+  let myX = 2*parseFloat(prompt("What is the X translate?"));
+  let myY = 2*parseFloat(prompt("What is the Y translate?"));
+  pointList.forEach(function(nextPt) {
+    nextPt[0] += myX;
+    nextPt[1] += myY;
+  });
+  draw();
 }
 
 function goLeft() {
@@ -645,11 +655,11 @@ function mouseMoved(event) {
   posi = [canvasX/sized+xOffset,canvasY/sized+yOffset,1];
   let pointName = JSON.stringify(findPoint(posi));
   if (pointName === "[-1]") {
-    document.getElementById("coords").value ="("+canvasX/sized+xOffset+"," + canvasY/sized+yOffset+")";
+    document.getElementById("coords").value ="("+(canvasX/sized+xOffset)+"," + (canvasY/sized+yOffset)+")";
   } else {
     let nowPtMap = JSON.parse(pointName);
-    let nowPtX = Math.round(pointList[nowPtMap[0]][0]*100)/100;
-    let nowPtY = Math.round(pointList[nowPtMap[0]][1]*100)/100;
+    let nowPtX = Math.round((pointList[nowPtMap[0]][0]+nowPtMap[1][0]*Ax+nowPtMap[1][1]*Bx)*100)/100;
+    let nowPtY = Math.round((pointList[nowPtMap[0]][1]+nowPtMap[1][0]*Ay+nowPtMap[1][1]*By)*100)/100;
     document.getElementById("coords").value=JSON.stringify(pointName)+" raw:"+nowPtX+","+nowPtY;
   }
 
@@ -784,6 +794,17 @@ function drawPoint(ptMap) {
   }
 //if we return to polygon starting point
   if (JSON.stringify(ptMap) === JSON.stringify(curPoly[0])) {
+    // make curPoly clockwise
+    var rawPoly = polyAddRaw(curPoly);
+    var areaSum = 0;
+    for (i=0;i<curPoly.length-1;i++) {
+      var nextAdder = (rawPoly[i+1][2][0]-rawPoly[i][2][0])*(rawPoly[i+1][2][1]+rawPoly[i][2][1]);
+      areaSum +=nextAdder;
+    }
+    areaSum += (rawPoly[0][2][0]-rawPoly[rawPoly.length-1][2][0])*
+       (rawPoly[0][2][1]+rawPoly[rawPoly.length-1][2][1]);
+    if (areaSum>0) {curPoly.reverse()}
+
     polyList.push(curPoly);
     curPoly = [];
     }
@@ -887,13 +908,20 @@ function mergeMyTiling() {
       }
     }
     if (newAx === Ax && newAy === Ay && newBx === Bx && newBy === By) {
+
       let oldPtLen = pointList.length;
       let oldPolyLen = polyList.length;
       mergeAdd(oldPtLen);
-      mergeDropDup(oldPtLen,oldPolyLen);
+ //     mergeDropDup(oldPtLen,oldPolyLen);
+      newMerge();
+      newPointList = [];
+      newPolyList = [];
+
       draw();
     } else {
       alert("We can only merge if vectors match.");
+      newPointList = [];
+      newPolyList = [];
     }
   },false);
 
@@ -911,6 +939,39 @@ function mergeAdd(oldPtLen) {
   });
   polyList = polyList.concat(newPolyList);
 }
+
+function newMerge() {
+// this will merge all points.
+  let joinDist = minEdgeLen()/3;
+  let vectDenom = Ax*By-Ay*Bx;
+  for (let i = 0;i<pointList.length;i++) {
+    for (let j = i+1;j<pointList.length;j++) {
+      let xDiff = pointList[i][0]-pointList[j][0];
+      let yDiff = pointList[i][1]-pointList[j][1];
+      let Acoord = (xDiff*By-yDiff*Bx)/vectDenom;
+      let Bcoord = (Ax*yDiff-Ay*xDiff)/vectDenom;
+      let roundA = Math.round(Acoord);
+      let roundB = Math.round(Bcoord);
+      let absXDiff = Math.abs(xDiff - roundA*Ax-roundB*Bx);
+      let absYDiff = Math.abs(yDiff - roundA*Ay-roundB*By); 
+//alert([i,j,absXDiff+absYDiff,joinDist]);
+      if (absXDiff+absYDiff<joinDist) {
+//alert(JSON.stringify([pointList[i],pointList[j],roundA,roundB]));
+        for (let k = 0;k<polyList.length;k++) {
+          polyList[k].forEach(function(nextPt) {
+            if (nextPt[0] === j) {
+              nextPt[0] = i;
+              nextPt[1][0] = nextPt[1][0]-roundA;
+              nextPt[1][1] = nextPt[1][1]-roundB;
+            } // end if 
+          }); // end polyList loop
+        } // end k loop
+      } // end if
+    } // end j loop
+  } // end i loop
+  dropUnused(); // keep locked points
+//  dropUnused2(); // drop all lone points
+} // end newMerge()
 
 function mergeDropDup(oldPtLen,oldPolyLen) {
   let joinDist = minEdgeLen()/4;
@@ -944,7 +1005,37 @@ function mergeDropDup(oldPtLen,oldPolyLen) {
  // alert(JSON.stringify([pointList,polyList]));
 }
 
-
+function dropDup() {
+  let joinDist = minEdgeLen()/4;
+  let vectDenom = Ax*By-Ay*Bx;
+  for (let i = 0;i<pointList.length-1;i++) {
+    for (let j = i+1;j<pointList.length;j++) {
+      let xDiff = pointList[i][0]-pointList[j][0];
+      let yDiff = pointList[i][1]-pointList[j][1];
+      let Acoord = (xDiff*By-yDiff*Bx)/vectDenom;
+      let Bcoord = (Ax*yDiff-Ay*xDiff)/vectDenom;
+      let roundA = Math.round(Acoord);
+      let roundB = Math.round(Bcoord);
+      let absXDiff = Math.abs(xDiff - roundA*Ax-roundB*Bx);
+      let absYDiff = Math.abs(yDiff - roundA*Ay-roundB*By); 
+//alert([i,j,absXDiff+absYDiff,joinDist]);
+      if (absXDiff+absYDiff<joinDist) {
+//alert(JSON.stringify([pointList[i],pointList[j],roundA,roundB]));
+        for (let k = 0;k<polyList.length;k++) {
+          polyList[k].forEach(function(nextPt) {
+            if (nextPt[0] === j) {
+              nextPt[0] = i;
+              nextPt[1][0] = nextPt[1][0]-roundA;
+              nextPt[1][1] = nextPt[1][1]-roundB;
+            } // end if 
+          }); // end polyList loop
+        } // end k loop
+      } // end if
+    } // end j loop
+  } // end i loop
+  dropUnused();
+ // alert(JSON.stringify([pointList,polyList]));
+}
 
 function newCoords2(point,vect1,vect2) {
 // return point in (vect1,vect2) coord. system
